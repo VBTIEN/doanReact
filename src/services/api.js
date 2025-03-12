@@ -12,7 +12,7 @@ const determinePort = async () => {
     for (const port of ports) {
         try {
             const response = await axios.get(`${baseUrlPrefix}:${port}/api/status`, {
-                timeout: 5000, // Timeout 5 giây
+                timeout: 1000, // Timeout 5 giây
                 headers: {
                     'Content-Type': 'application/json',
                 },
