@@ -81,13 +81,13 @@ const Register = () => {
           password_confirmation: passwordConfirmation,
           role_code: roleCode,
         };
-
         // Thêm grade hoặc subject_codes tùy theo vai trò
         if (role === 'Học Sinh') {
-          data.grade = grade;
+          data.grade_code = grade;
         } else if (role === 'Giáo Viên') {
           data.subject_codes = subjectCodes; 
         }
+        console.log("Data: ", data);
 
         // Gọi API đăng ký với dữ liệu đã chuẩn bị
         const response = await api.register(
@@ -96,7 +96,7 @@ const Register = () => {
           data.password,
           data.password_confirmation,
           data.role_code,
-          role === 'Học Sinh' ? { grade: data.grade } : role === 'Giáo Viên' ? { subject_codes: data.subject_codes } : {}
+          role === 'Học Sinh' ? { grade_code: data.grade_code } : role === 'Giáo Viên' ? { subject_codes: data.subject_codes } : {}
         );
 
         // Lưu token và thông tin người dùng vào localStorage
