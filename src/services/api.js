@@ -12,14 +12,24 @@ const api = axios.create({
   withCredentials: true, // Hỗ trợ credentials
 });
 
-// Interceptor để log request (tùy chọn, có thể bỏ nếu không cần)
-api.interceptors.request.use((config) => {
-  console.log('Sending request to:', config.baseURL + config.url); // Debug
-  return config;
-}, (error) => {
-  console.error('Request interceptor error:', error);
-  return Promise.reject(error);
-});
+// Interceptor để thêm token vào header và log request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    console.log('Token in interceptor:', token);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.log('No token found in localStorage');
+    }
+    console.log('Sending request to:', config.baseURL + config.url); 
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
 
 // API validate token
 export const validateToken = async (email) => {
@@ -44,6 +54,33 @@ export const resetPassword = async (email, token, password, passwordConfirmation
   );
 };
 
+// API forgot password
+export const forgotPassword = async (email) => {
+  console.log('Sending forgot password request for:', email);
+  return api.post('/password/forgot', { email });
+};
+
+// API register
+// src/services/api.js
+export const register = async (name, email, password, passwordConfirmation, roleCode, additionalData = {}) => {
+  return api.post('/register', {
+    name,
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    role_code: roleCode,
+    ...additionalData, 
+  });
+};
+// API login
+export const login = async (email, password) => {
+  console.log('Logging in user:', email);
+  return api.post('/login', {
+    email,
+    password,
+  });
+};
+
 // API mới cho Google Auth
 export const redirectToGoogle = async () => {
   //const baseURL = api.defaults.baseURL.replace('/api', '');
@@ -59,10 +96,18 @@ export const selectRole = async (role, userData) => {
   return api.post('/select-role', { role, user_data: userData });
 };
 
+export const getUser = async () => {
+  return await api.get('/user');
+};
+
 export default {
   validateToken,
   resetPassword,
+  forgotPassword,
+  register,
+  login,
   redirectToGoogle,
   handleGoogleCallback,
   selectRole,
+  getUser,
 };
