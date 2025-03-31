@@ -1,0 +1,365 @@
+/* src/styles/StudentDashboard.css */
+.student-dashboard-container {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(to right, #f3e7ff, #d1c4e9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+  }
+  
+  .student-dashboard-content {
+    max-width: 1200px;
+    width: 100%;
+  }
+  
+  .student-dashboard-title {
+    color: #7b1fa2;
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .student-dashboard-tabs {
+    margin-bottom: 24px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .student-dashboard-tabs .MuiTab-root {
+    color: #7b1fa2;
+    font-weight: 600;
+  }
+  
+  .student-dashboard-tabs .Mui-selected {
+    color: #d81b60;
+  }
+  
+  .student-dashboard-tabs .MuiTabs-indicator {
+    background-color: #d81b60;
+  }
+  
+  .student-dashboard-loading {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  
+  .student-dashboard-card {
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: white;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+  }
+  
+  .student-dashboard-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .student-dashboard-card-content {
+    padding: 20px;
+  }
+  
+  .student-dashboard-form-control {
+    margin-bottom: 16px;
+    width: 100%;
+  }
+  
+  .student-dashboard-form-control .MuiInputLabel-root {
+    color: #7b1fa2;
+  }
+  
+  .student-dashboard-form-control .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #d81b60;
+  }
+  
+  .student-dashboard-form-control .Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #d81b60;
+  }
+  
+  .student-dashboard-button {
+    margin-top: 20px;
+    background-color: #d81b60;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .student-dashboard-button:hover {
+    background-color: #c2185b;
+    transform: translateY(-2px);
+  }
+  
+  .student-dashboard-table-container {
+    margin-top: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .student-dashboard-table-container .MuiTableHead-root {
+    background-color: #f3e7ff;
+  }
+  
+  .student-dashboard-table-container .MuiTableCell-head {
+    color: #7b1fa2;
+    font-weight: 600;
+  }
+  
+  .student-dashboard-table-container .MuiTableCell-body {
+    color: #34495e;
+  }
+  
+  .student-dashboard-no-data {
+    margin-top: 16px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+  }
+  
+  /* -------------------- Thông tin cá nhân -------------------- */
+  .student-personal-info-card {
+    background: linear-gradient(145deg, #ffffff, #f9f1ff);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .student-personal-info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  }
+  
+  .student-personal-info-title {
+    color: #7b1fa2;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .student-personal-info-title::after {
+    content: '';
+    width: 60px;
+    height: 3px;
+    background-color: #d81b60;
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+  }
+  
+  .student-personal-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+  }
+  
+  .student-avatar-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  
+  .student-personal-info-avatar {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #d81b60;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .student-personal-info-avatar:hover {
+    transform: scale(1.05);
+  }
+  
+  .student-personal-info-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: #fafafa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #d81b60;
+  }
+  
+  .student-personal-info-item:hover {
+    background: #f9e7ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transform: translateX(5px);
+  }
+  
+  .student-personal-info-label {
+    font-weight: 600;
+    color: #2c3e50;
+    flex: 1;
+    min-width: 150px;
+    font-size: 1rem;
+  }
+  
+  .student-personal-info-value {
+    color: #34495e;
+    flex: 2;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+  
+  .student-personal-info-item .MuiTextField-root {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  .student-personal-info-item .MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #d81b60;
+  }
+  
+  .student-personal-info-item input[type="file"] {
+    padding: 10px 0;
+    color: #34495e;
+    font-size: 0.9rem;
+  }
+  
+  .student-personal-info-item input[type="file"]::-webkit-file-upload-button {
+    background-color: #d81b60;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .student-personal-info-item input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #c2185b;
+  }
+  
+  .student-personal-info-container .MuiButton-root {
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .student-personal-info-container .MuiButton-containedPrimary {
+    background-color: #d81b60;
+  }
+  
+  .student-personal-info-container .MuiButton-containedPrimary:hover {
+    background-color: #c2185b;
+    transform: translateY(-2px);
+  }
+  
+  .student-personal-info-container .MuiButton-containedSecondary {
+    background-color: #ff8a80;
+  }
+  
+  .student-personal-info-container .MuiButton-containedSecondary:hover {
+    background-color: #f44336;
+    transform: translateY(-2px);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .student-dashboard-container {
+      padding: 16px;
+    }
+  
+    .student-dashboard-content {
+      max-width: 100%;
+    }
+  
+    .student-dashboard-card {
+      padding: 16px;
+    }
+  
+    .student-dashboard-card-content {
+      padding: 15px;
+    }
+  
+    .student-personal-info-container {
+      padding: 15px;
+    }
+  
+    .student-personal-info-item {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 12px 15px;
+      border-left: 3px solid #d81b60;
+    }
+  
+    .student-personal-info-label {
+      margin-bottom: 8px;
+      min-width: 100%;
+    }
+  
+    .student-personal-info-value {
+      text-align: left;
+      width: 100%;
+    }
+  
+    .student-personal-info-item .MuiTextField-root {
+      width: 100%;
+    }
+  
+    .student-avatar-section {
+      margin-bottom: 20px;
+    }
+  
+    .student-personal-info-avatar {
+      width: 100px !important;
+      height: 100px !important;
+    }
+  }
+
+/* Specific styles for the rankings tab (if needed) */
+.student-dashboard-rankings-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.student-dashboard-rankings-form .student-dashboard-form-control {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Highlight the student's own ranking */
+.student-ranking-highlight {
+  background-color: #f7f471;
+  font-weight: 600;
+}
+
+/* Responsive adjustments for the rankings form */
+@media (max-width: 600px) {
+  .student-dashboard-rankings-form {
+    flex-direction: column;
+  }
+
+  .student-dashboard-rankings-form .student-dashboard-form-control {
+    min-width: 100%;
+  }
+}

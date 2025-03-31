@@ -2,13 +2,15 @@
 import { useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import SelectRole from './pages/SelectRole';
+import Login from './pages/Auth/Login';
+import SelectRole from './pages/Auth/SelectRole';
 import Dashboard from './pages/Dashboard';
-import ResetPassword from './pages/ResetPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
 import api from './services/api';
-import ForgotPassword from './pages/ForgotPassword';
-import Register from './pages/Register';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import Register from './pages/Auth/Register';
+import TeacherDashboard from './pages/Teacher/TeacherDashboard';
+import StudentDashboard from './pages/Student/StudentDashboard';
 
 // Component bảo vệ route
 const ProtectedRoute = ({ children }) => {
@@ -17,7 +19,7 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const publicPaths = ['/login', '/register', '/selectrole', '/forgot-password', '/reset-password'];
+    const publicPaths = ['/login', '/register', '/selectrole', '/forgot-password', '/reset-password', '/dashboard'];
 
     if (!token && !publicPaths.includes(location.pathname)) {
       // Nếu không có token và không ở trang công khai, chuyển hướng về /login
@@ -90,7 +92,7 @@ const App = () => {
   }, [navigate, location.search]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f5', position: 'relative' }}>
+    <div className="container">
       <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
@@ -106,6 +108,8 @@ const App = () => {
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/teacher" element={<TeacherDashboard />} />
+        <Route path="/student" element={<StudentDashboard />} />
       </Routes>
     </div>
   );
