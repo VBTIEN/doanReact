@@ -1,8 +1,8 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import '../styles/Auth.css';
+import api from '../../services/api';
+import '../../styles/Auth.css';
 
 const MESSAGES = {
   GOOGLE_ERROR: 'Có lỗi khi đăng nhập bằng Google: ',

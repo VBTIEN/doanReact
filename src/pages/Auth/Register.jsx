@@ -1,9 +1,9 @@
 // src/pages/Register.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import getAll from '../services/getAll'; 
-import '../styles/Auth.css';
+import api from '../../services/api';
+import getAll from '../../services/getAll'; 
+import '../../styles/Auth.css';
 
 const Register = () => {
   const [name, setName] = useState('');

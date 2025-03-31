@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { validateToken, resetPassword } from '../services/api';
-import '../styles/Auth.css';
+import { validateToken, resetPassword } from '../../services/api';
+import '../../styles/Auth.css';
 
 const ResetPassword = () => {
     const [email, setEmail] = useState('');
