@@ -6,6 +6,9 @@ import '../../styles/SelectRole.css';
 const SelectRole = () => {
   const [role, setRole] = useState('');
   const [userData, setUserData] = useState(null);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [availableSubjects, setAvailableSubjects] = useState([
+  ]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +19,7 @@ const SelectRole = () => {
     } else {
       navigate('/login');
     }
+    
   }, [navigate]);
 
   const handleRoleSelection = async () => {
@@ -24,16 +28,30 @@ const SelectRole = () => {
       return;
     }
 
+    if (selectedSubjects.length === 0) {
+      alert('Vui lòng chọn ít nhất một môn học!');
+      return;
+    }
+
     try {
-      const response = await api.selectRole(role, userData);
+      const response = await api.selectRole(role, userData, selectedSubjects);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('subjects', JSON.stringify(selectedSubjects));
       localStorage.removeItem('user_data');
       navigate('/dashboard');
     } catch (error) {
       console.error('Error selecting role:', error);
       alert('Có lỗi khi chọn vai trò: ' + error.message);
     }
+  };
+
+  const handleSubjectChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => ({
+      id: parseInt(option.value),
+      name: option.text
+    }));
+    setSelectedSubjects(selectedOptions);
   };
 
   if (!userData) {
@@ -68,6 +86,33 @@ const SelectRole = () => {
                 </select>
               </div>
             </div>
+            
+            <div className="input-group">
+              <label htmlFor="subjects" className="label">Môn học</label>
+              <div className="input-wrapper">
+                <select
+                  id="subjects"
+                  multiple
+                  onChange={handleSubjectChange}
+                  className="input subjects-select"
+                  size="5"
+                >
+                  {availableSubjects.map(subject => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="help-text">Chọn nhiều môn bằng cách giữ phím Ctrl (hoặc Command trên Mac) và click</p>
+              
+              {selectedSubjects.length > 0 && (
+                <div className="selected-subjects">
+                  <p>Môn đã chọn: {selectedSubjects.map(s => s.name).join(', ')}</p>
+                </div>
+              )}
+            </div>
+            
             <button
               type="button"
               onClick={handleRoleSelection}

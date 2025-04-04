@@ -1,4 +1,3 @@
-// src/services/student.js
 import axios from 'axios';
 
 // Lấy baseURL từ biến môi trường
@@ -82,60 +81,18 @@ export const updateStudentProfile = async (studentData) => {
   }
 };
 
-// API để lấy xếp hạng theo lớp và học kỳ
-export const getClassroomTermRankings = async (classroomCode, termCode) => {
+// API để export điểm của học sinh
+export const exportStudentScores = async () => {
   try {
-    console.log('Fetching classroom-term rankings for classroom:', classroomCode, 'term:', termCode);
-    const response = await api.post('/rankings/classroom-term', {
-      classroom_code: classroomCode,
-      term_code: termCode,
-    });
-    return response.data.data;
+    console.log('Exporting student scores...');
+    const response = await api.post('/export/student-scores');
+    if (response.data.status === 'success') {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || 'Failed to export student scores');
+    }
   } catch (error) {
-    console.error('Error fetching classroom-term rankings:', error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// API để lấy xếp hạng theo khối và học kỳ
-export const getGradeTermRankings = async (gradeCode, termCode) => {
-  try {
-    console.log('Fetching grade-term rankings for grade:', gradeCode, 'term:', termCode);
-    const response = await api.post('/rankings/grade-term', {
-      grade_code: gradeCode,
-      term_code: termCode,
-    });
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching grade-term rankings:', error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// API để lấy xếp hạng theo lớp trong cả năm
-export const getClassroomYearlyRankings = async (classroomCode) => {
-  try {
-    console.log('Fetching classroom-yearly rankings for classroom:', classroomCode);
-    const response = await api.post('/rankings/classroom-yearly', {
-      classroom_code: classroomCode,
-    });
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching classroom-yearly rankings:', error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// API để lấy xếp hạng theo khối trong cả năm
-export const getGradeYearlyRankings = async (gradeCode) => {
-  try {
-    console.log('Fetching grade-yearly rankings for grade:', gradeCode);
-    const response = await api.post('/rankings/grade-yearly', {
-      grade_code: gradeCode,
-    });
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching grade-yearly rankings:', error.response?.data || error.message);
+    console.error('Error exporting student scores:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -144,8 +101,5 @@ export const getGradeYearlyRankings = async (gradeCode) => {
 export default {
   getStudentScores,
   updateStudentProfile,
-  getClassroomTermRankings,
-  getGradeTermRankings,
-  getClassroomYearlyRankings,
-  getGradeYearlyRankings,
+  exportStudentScores, 
 };

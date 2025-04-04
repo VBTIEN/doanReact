@@ -143,6 +143,21 @@ export const updateTeacherProfile = async (teacherData) => {
     throw error;
   }
 };
+// API để lấy điểm của lớp học
+export const getClassroomScores = async (classroomCode, examCode = '', subjectCode = '') => {
+  try {
+    console.log('Fetching scores for classroom:', classroomCode, 'exam:', examCode, 'subject:', subjectCode);
+    const response = await api.post('/teacher/classroom-scores', {
+      classroom_code: classroomCode,
+      exam_code: examCode,
+      subject_code: subjectCode,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching classroom scores:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
 // Export các hàm dưới dạng object
 export default {
@@ -153,4 +168,5 @@ export default {
   getStudentsByClassroom,
   getTeachersInClassroom,
   updateTeacherProfile,
+  getClassroomScores,
 };

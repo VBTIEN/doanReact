@@ -24,6 +24,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import GradeIcon from '@mui/icons-material/Grade';
 import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import SchoolIcon from '@mui/icons-material/School';
+import LogoutIcon from '@mui/icons-material/Logout';
+import DownloadIcon from '@mui/icons-material/Download';
 import '../../styles/StudentDashboard.css';
 
 const StudentDashboard = () => {
@@ -51,11 +54,17 @@ const StudentDashboard = () => {
   const [gradeOptions, setGradeOptions] = useState([]);
   const [termOptions, setTermOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
-  const [examOptions, setExamOptions] = useState([]); // Renamed from examCode to examOptions for clarity
+  const [examOptions, setExamOptions] = useState([]);
+  const [downloadUrl, setDownloadUrl] = useState(null);
+
+  // State for academic performance
+  const [academicPerformanceType, setAcademicPerformanceType] = useState('classroom-term');
+  const [academicPerformanceLevel, setAcademicPerformanceLevel] = useState('');
+  const [academicPerformanceData, setAcademicPerformanceData] = useState([]);
 
   // Define columns for the scores DataGrid
   const scoreColumns = [
-    { field: 'exam_name', headerName: 'Tên bài kiểm tra', width: 200 }, // Changed to exam_name
+    { field: 'exam_name', headerName: 'Tên bài kiểm tra', width: 200 },
     { field: 'subject_code', headerName: 'Mã môn học', width: 120 },
     { field: 'score_value', headerName: 'Điểm', width: 100 },
     { field: 'date', headerName: 'Ngày', width: 150 },
@@ -63,14 +72,27 @@ const StudentDashboard = () => {
 
   // Define columns for the rankings DataGrid
   const rankingColumns = [
-    {
-      field: 'rank',
-      headerName: 'Xếp hạng',
-      width: 100,
-    },
+    { field: 'rank', headerName: 'Xếp hạng', width: 100 },
     { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
     { field: 'name', headerName: 'Tên học sinh', width: 200 },
     { field: 'term_average', headerName: 'Điểm trung bình', width: 150 },
+  ];
+
+  // Define columns for the academic performance DataGrid
+  const academicPerformanceColumns = [
+    { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
+    { field: 'name', headerName: 'Tên học sinh', width: 200 },
+    { field: 'average_score', headerName: 'Điểm trung bình', width: 150 },
+    { field: 'academic_performance', headerName: 'Học lực', width: 150 },
+  ];
+
+  // List of academic performance levels
+  const academicPerformanceLevels = [
+    'Yếu',
+    'Trung bình',
+    'Khá',
+    'Giỏi',
+    'Xuất sắc',
   ];
 
   // Lấy thông tin người dùng và các tùy chọn (lớp, khối, học kỳ, môn học, bài kiểm tra)
@@ -145,8 +167,22 @@ const StudentDashboard = () => {
 
   // Xử lý thay đổi tab
   const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+    if (newValue === 4) {
+      handleLogout();
+    } else {
+      setTabValue(newValue);
+    }
   };
+
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+    if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+      localStorage.clear();
+      toast.success('Đăng xuất thành công!');
+      navigate('/login');
+    }
+  };
+
 
   // Xử lý lấy điểm của học sinh
   const handleFetchScores = async (e) => {
@@ -154,14 +190,13 @@ const StudentDashboard = () => {
     setLoading(true);
     try {
       const scoresData = await studentService.getStudentScores(subjectCode, termCode);
-      // Map scores data to include exam_name instead of exam_code
       const mappedScores = scoresData.map((score, index) => {
         const exam = examOptions.find((e) => e.exam_code === score.exam_code);
         return {
           ...score,
-          id: score.exam_code || `score-${index}`, // Ensure unique id
-          exam_name: exam ? exam.exam_name : score.exam_code || 'N/A', // Use exam_name if available, otherwise fallback to exam_code
-          subject_code: score.subject_code || subjectCode || 'N/A', // Use subject_code from data or fallback to selected subjectCode
+          id: score.exam_code || `score-${index}`,
+          exam_name: exam ? exam.exam_name : score.exam_code || 'N/A',
+          subject_code: score.subject_code || subjectCode || 'N/A',
         };
       });
       setScores(mappedScores);
@@ -187,7 +222,7 @@ const StudentDashboard = () => {
             setLoading(false);
             return;
           }
-          rankingsData = await studentService.getClassroomTermRankings(classroomCode, rankingTermCode);
+          rankingsData = await getAll.getClassroomTermRankings(classroomCode, rankingTermCode);
           break;
         case 'grade-term':
           if (!gradeCode || !rankingTermCode) {
@@ -195,7 +230,7 @@ const StudentDashboard = () => {
             setLoading(false);
             return;
           }
-          rankingsData = await studentService.getGradeTermRankings(gradeCode, rankingTermCode);
+          rankingsData = await getAll.getGradeTermRankings(gradeCode, rankingTermCode);
           break;
         case 'classroom-yearly':
           if (!classroomCode) {
@@ -203,7 +238,7 @@ const StudentDashboard = () => {
             setLoading(false);
             return;
           }
-          rankingsData = await studentService.getClassroomYearlyRankings(classroomCode);
+          rankingsData = await getAll.getClassroomYearlyRankings(classroomCode);
           break;
         case 'grade-yearly':
           if (!gradeCode) {
@@ -211,16 +246,14 @@ const StudentDashboard = () => {
             setLoading(false);
             return;
           }
-          rankingsData = await studentService.getGradeYearlyRankings(gradeCode);
+          rankingsData = await getAll.getGradeYearlyRankings(gradeCode);
           break;
         default:
           throw new Error('Loại xếp hạng không hợp lệ.');
       }
-      // Ensure rankingsData.rankings is an array
       if (!rankingsData || !Array.isArray(rankingsData.rankings)) {
         throw new Error('Dữ liệu xếp hạng không hợp lệ.');
       }
-      // Map rankings data to create a single 'rank' field
       const mappedRankings = rankingsData.rankings.map((ranking, index) => ({
         id: ranking.student_code || `ranking-${index}`,
         rank: ranking.classroom_rank || ranking.grade_rank || 'N/A',
@@ -234,6 +267,84 @@ const StudentDashboard = () => {
       console.error('Error fetching rankings:', error);
       toast.error(error.message || 'Không thể lấy xếp hạng.');
       setRankings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xử lý lấy danh sách học sinh theo học lực
+  const handleFetchAcademicPerformance = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      let performanceData;
+      switch (academicPerformanceType) {
+        case 'classroom-term':
+          if (!classroomCode || !rankingTermCode || !academicPerformanceLevel) {
+            toast.error('Vui lòng chọn lớp, học kỳ và mức học lực.');
+            setLoading(false);
+            return;
+          }
+          performanceData = await getAll.getClassroomTermAcademicPerformance(
+            classroomCode,
+            rankingTermCode,
+            academicPerformanceLevel
+          );
+          break;
+        case 'classroom-yearly':
+          if (!classroomCode || !academicPerformanceLevel) {
+            toast.error('Vui lòng chọn lớp và mức học lực.');
+            setLoading(false);
+            return;
+          }
+          performanceData = await getAll.getClassroomYearlyAcademicPerformance(
+            classroomCode,
+            academicPerformanceLevel
+          );
+          break;
+        case 'grade-term':
+          if (!gradeCode || !rankingTermCode || !academicPerformanceLevel) {
+            toast.error('Vui lòng chọn khối, học kỳ và mức học lực.');
+            setLoading(false);
+            return;
+          }
+          performanceData = await getAll.getGradeTermAcademicPerformance(
+            gradeCode,
+            rankingTermCode,
+            academicPerformanceLevel
+          );
+          break;
+        case 'grade-yearly':
+          if (!gradeCode || !academicPerformanceLevel) {
+            toast.error('Vui lòng chọn khối và mức học lực.');
+            setLoading(false);
+            return;
+          }
+          performanceData = await getAll.getGradeYearlyAcademicPerformance(
+            gradeCode,
+            academicPerformanceLevel
+          );
+          break;
+        default:
+          throw new Error('Loại học lực không hợp lệ.');
+      }
+      console.log('performanceData: ', performanceData);
+      if (!performanceData.students || !Array.isArray(performanceData.students)) {
+        throw new Error('Dữ liệu học lực không hợp lệ.');
+      }
+      const mappedPerformanceData = performanceData.students.map((student, index) => ({
+        id: student.student_code || `student-${index}`,
+        student_code: student.student_code || 'N/A',
+        name: student.name || 'N/A',
+        average_score: student.term_average || student.yearly_average || 'N/A',
+        academic_performance: student.academic_performance || academicPerformanceLevel,
+      }));
+      setAcademicPerformanceData(mappedPerformanceData);
+      toast.success('Lấy danh sách học sinh theo học lực thành công!');
+    } catch (error) {
+      console.error('Error fetching academic performance:', error);
+      toast.error(error.message || 'Không thể lấy danh sách học sinh theo học lực.');
+      setAcademicPerformanceData([]);
     } finally {
       setLoading(false);
     }
@@ -260,7 +371,7 @@ const StudentDashboard = () => {
         ...prev,
         name: updatedData.name || prev.name,
         email: updatedData.email || prev.email,
-        avatar_url: updatedData.avatar_url || prev.avatar_url,
+        avatarUrl: updatedData.avatarUrl || prev.avatarUrl,
       }));
       const updatedUser = {
         ...JSON.parse(localStorage.getItem('user')),
@@ -268,7 +379,7 @@ const StudentDashboard = () => {
           ...JSON.parse(localStorage.getItem('user')).data,
           name: updatedData.name || user.name,
           email: updatedData.email || user.email,
-          avatar_url: updatedData.avatar_url || user.avatar_url,
+          avatarUrl: updatedData.avatarUrl || user.avatarUrl,
         },
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -276,6 +387,28 @@ const StudentDashboard = () => {
       setIsEditing(false);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Cập nhật thông tin cá nhân thất bại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleExportStudentScores = async () => {
+    setLoading(true);
+    try {
+      const response = await studentService.exportStudentScores();
+      setDownloadUrl(response.downloadUrl);
+      toast.success(
+        <div>
+          {response.message}
+          <br />
+          <a href={response.downloadUrl} target="_blank" rel="noopener noreferrer">
+            Tải xuống
+          </a>
+        </div>
+      );
+      // Tự động mở link tải xuống
+      window.open(response.downloadUrl, '_blank');
+    } catch (error) {
+      toast.error('Không thể export điểm. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -298,6 +431,8 @@ const StudentDashboard = () => {
           <Tab label="Xem điểm" icon={<GradeIcon />} />
           <Tab label="Thông tin cá nhân" icon={<PersonIcon />} />
           <Tab label="Xem xếp hạng" icon={<EmojiEventsIcon />} />
+          <Tab label="Học lực" icon={<SchoolIcon />} /> 
+          <Tab label="Đăng xuất" icon={<LogoutIcon /> } sx={{ color: 'red' }}/>
         </Tabs>
 
         {/* Hiển thị loading spinner */}
@@ -310,7 +445,7 @@ const StudentDashboard = () => {
         {/* Toast container để hiển thị thông báo */}
         <ToastContainer position="top-right" autoClose={3000} />
 
-        {/* Tab 1: Xem điểm */}
+        {/* Tab 0: Xem điểm */}
         {tabValue === 0 && (
           <Card className="student-dashboard-card">
             <CardContent className="student-dashboard-card-content">
@@ -354,6 +489,15 @@ const StudentDashboard = () => {
                 >
                   Xem điểm
                 </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleExportStudentScores}
+                  disabled={loading}
+                >
+                  Export Điểm Của Bạn
+                </Button>
               </form>
 
               {/* Hiển thị danh sách điểm với DataGrid */}
@@ -380,7 +524,7 @@ const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 2: Thông tin cá nhân */}
+        {/* Tab 1: Thông tin cá nhân */}
         {tabValue === 1 && (
           <Card className="student-dashboard-card">
             <CardContent className="student-dashboard-card-content student-personal-info-card">
@@ -390,9 +534,9 @@ const StudentDashboard = () => {
               {user ? (
                 <Box className="student-personal-info-container">
                   <Box className="student-personal-info-item student-avatar-section">
-                    {user.avatar_url ? (
+                    {user.avatarUrl ? (
                       <img
-                        src={user.avatar_url}
+                        src={user.avatarUrl}
                         alt="Avatar"
                         className="student-personal-info-avatar"
                         style={{ width: '100px', height: '100px', borderRadius: '50%' }}
@@ -503,7 +647,7 @@ const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 3: Xem xếp hạng */}
+        {/* Tab 2: Xem xếp hạng */}
         {tabValue === 2 && (
           <Card className="student-dashboard-card">
             <CardContent className="student-dashboard-card-content">
@@ -611,6 +755,136 @@ const StudentDashboard = () => {
               ) : (
                 <Typography className="student-dashboard-no-data">
                   Không có xếp hạng nào.
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tab 3: Học lực */}
+        {tabValue === 3 && (
+          <Card className="student-dashboard-card">
+            <CardContent className="student-dashboard-card-content">
+              <Typography variant="h6" gutterBottom>
+                Xem học lực
+              </Typography>
+              <form onSubmit={handleFetchAcademicPerformance}>
+                <FormControl className="student-dashboard-form-control">
+                  <InputLabel>Loại học lực</InputLabel>
+                  <Select
+                    value={academicPerformanceType}
+                    onChange={(e) => setAcademicPerformanceType(e.target.value)}
+                    label="Loại học lực"
+                    required
+                  >
+                    <MenuItem value="classroom-term">Học lực theo lớp và học kỳ</MenuItem>
+                    <MenuItem value="grade-term">Học lực theo khối và học kỳ</MenuItem>
+                    <MenuItem value="classroom-yearly">Học lực theo lớp cả năm</MenuItem>
+                    <MenuItem value="grade-yearly">Học lực theo khối cả năm</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {(academicPerformanceType === 'classroom-term' || academicPerformanceType === 'classroom-yearly') && (
+                  <FormControl className="student-dashboard-form-control">
+                    <InputLabel>Lớp học</InputLabel>
+                    <Select
+                      value={classroomCode}
+                      onChange={(e) => setClassroomCode(e.target.value)}
+                      label="Lớp học"
+                      required
+                    >
+                      {classroomOptions.map((classroom) => (
+                        <MenuItem key={classroom.classroom_code} value={classroom.classroom_code}>
+                          {classroom.classroom_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                {(academicPerformanceType === 'grade-term' || academicPerformanceType === 'grade-yearly') && (
+                  <FormControl className="student-dashboard-form-control">
+                    <InputLabel>Khối</InputLabel>
+                    <Select
+                      value={gradeCode}
+                      onChange={(e) => setGradeCode(e.target.value)}
+                      label="Khối"
+                      required
+                    >
+                      {gradeOptions.map((grade) => (
+                        <MenuItem key={grade.grade_code} value={grade.grade_code}>
+                          {grade.grade_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                {(academicPerformanceType === 'classroom-term' || academicPerformanceType === 'grade-term') && (
+                  <FormControl className="student-dashboard-form-control">
+                    <InputLabel>Học kỳ</InputLabel>
+                    <Select
+                      value={rankingTermCode}
+                      onChange={(e) => setRankingTermCode(e.target.value)}
+                      label="Học kỳ"
+                      required
+                    >
+                      {termOptions.map((term) => (
+                        <MenuItem key={term.term_code} value={term.term_code}>
+                          {term.term_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                <FormControl className="student-dashboard-form-control">
+                  <InputLabel>Mức học lực</InputLabel>
+                  <Select
+                    value={academicPerformanceLevel}
+                    onChange={(e) => setAcademicPerformanceLevel(e.target.value)}
+                    label="Mức học lực"
+                    required
+                  >
+                    {academicPerformanceLevels.map((level) => (
+                      <MenuItem key={level} value={level}>
+                        {level}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  className="student-dashboard-button"
+                >
+                  Xem học lực
+                </Button>
+              </form>
+
+              {/* Hiển thị danh sách học sinh theo học lực với DataGrid */}
+              {academicPerformanceData.length > 0 ? (
+                <Box className="student-dashboard-data-grid">
+                  <DataGrid
+                    rows={academicPerformanceData}
+                    columns={academicPerformanceColumns}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: 5 },
+                      },
+                    }}
+                    pageSizeOptions={[5, 10, 20]}
+                    autoHeight
+                    getRowClassName={(params) =>
+                      params.row.student_code === user?.student_code ? 'student-ranking-highlight' : ''
+                    }
+                  />
+                </Box>
+              ) : (
+                <Typography className="student-dashboard-no-data">
+                  Không có học sinh nào phù hợp với mức học lực này.
                 </Typography>
               )}
             </CardContent>
