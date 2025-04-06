@@ -16,14 +16,11 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('Token in student.js interceptor:', token); // Debug token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Authorization header set in student.js:', config.headers.Authorization); // Debug header
     } else {
-      console.log('No token found in localStorage for student.js'); // Debug khi không có token
+      console.log('No token found in localStorage for student.js');
     }
-    console.log('Sending request to:', config.baseURL + config.url); // Debug URL
     return config;
   },
   (error) => {
@@ -35,7 +32,6 @@ api.interceptors.request.use(
 // API để lấy điểm của học sinh
 export const getStudentScores = async (subjectCode, termCode) => {
   try {
-    console.log('Fetching scores for subject:', subjectCode, 'term:', termCode);
     const response = await api.post('/student/scores', {
       subject_code: subjectCode,
       term_code: termCode,
@@ -50,7 +46,6 @@ export const getStudentScores = async (subjectCode, termCode) => {
 // API để cập nhật thông tin học sinh (bao gồm upload avatar)
 export const updateStudentProfile = async (studentData) => {
   try {
-    console.log('Updating student profile with data:', studentData);
 
     // Tạo FormData để gửi dữ liệu dạng multipart/form-data
     const formData = new FormData();
@@ -73,7 +68,6 @@ export const updateStudentProfile = async (studentData) => {
       },
     });
 
-    console.log('Student profile updated successfully:', response.data);
     return response.data.data;
   } catch (error) {
     console.error('Error updating student profile:', error.response?.data || error.message);
@@ -84,7 +78,6 @@ export const updateStudentProfile = async (studentData) => {
 // API để export điểm của học sinh
 export const exportStudentScores = async () => {
   try {
-    console.log('Exporting student scores...');
     const response = await api.post('/export/student-scores');
     if (response.data.status === 'success') {
       return response.data;

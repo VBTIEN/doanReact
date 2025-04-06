@@ -7,8 +7,6 @@ const SelectRole = () => {
   const [role, setRole] = useState('');
   const [userData, setUserData] = useState(null);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [availableSubjects, setAvailableSubjects] = useState([
-  ]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,10 +26,6 @@ const SelectRole = () => {
       return;
     }
 
-    if (selectedSubjects.length === 0) {
-      alert('Vui lòng chọn ít nhất một môn học!');
-      return;
-    }
 
     try {
       const response = await api.selectRole(role, userData, selectedSubjects);
@@ -46,21 +40,7 @@ const SelectRole = () => {
     }
   };
 
-  const handleSubjectChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => ({
-      id: parseInt(option.value),
-      name: option.text
-    }));
-    setSelectedSubjects(selectedOptions);
-  };
 
-  if (!userData) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="select-role-container">
@@ -69,7 +49,6 @@ const SelectRole = () => {
         <div className="left-panel">
           <img src="/images/hutech_logo.jpg" alt="Hutech Logo" className="logo" />
           <h2 className="title">Chọn vai trò</h2>
-          <p className="welcome-text">Xin chào, {userData.name} ({userData.email})</p>
           <form className="form">
             <div className="input-group">
               <label htmlFor="role" className="label">Vai trò</label>
@@ -87,31 +66,6 @@ const SelectRole = () => {
               </div>
             </div>
             
-            <div className="input-group">
-              <label htmlFor="subjects" className="label">Môn học</label>
-              <div className="input-wrapper">
-                <select
-                  id="subjects"
-                  multiple
-                  onChange={handleSubjectChange}
-                  className="input subjects-select"
-                  size="5"
-                >
-                  {availableSubjects.map(subject => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <p className="help-text">Chọn nhiều môn bằng cách giữ phím Ctrl (hoặc Command trên Mac) và click</p>
-              
-              {selectedSubjects.length > 0 && (
-                <div className="selected-subjects">
-                  <p>Môn đã chọn: {selectedSubjects.map(s => s.name).join(', ')}</p>
-                </div>
-              )}
-            </div>
             
             <button
               type="button"

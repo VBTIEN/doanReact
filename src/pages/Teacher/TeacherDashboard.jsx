@@ -9,8 +9,6 @@ import {
   Typography,
   TextField,
   Button,
-  Tabs,
-  Tab,
   CircularProgress,
   MenuItem,
   Select,
@@ -23,6 +21,13 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Avatar,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { ToastContainer, toast } from 'react-toastify';
@@ -35,7 +40,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
-import DownloadIcon from '@mui/icons-material/Download'; // Icon for export buttons
+import DownloadIcon from '@mui/icons-material/Download';
+import MenuIcon from '@mui/icons-material/Menu';
 import '../../styles/TeacherDashboard.css';
 
 const TeacherDashboard = () => {
@@ -61,23 +67,48 @@ const TeacherDashboard = () => {
     avatar: null,
   });
   const [teacherFilter, setTeacherFilter] = useState('all');
-  // State to store download URLs for each export type
   const [exportUrls, setExportUrls] = useState({
     scores: null,
     termAverages: null,
     yearlyAverages: null,
   });
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  console.log("user img: ", user);
+  const teacherColumns = [
+    { field: 'teacher_code', headerName: 'Mã giáo viên', width: 150 },
+    { field: 'name', headerName: 'Tên giáo viên', width: 200 },
+    { field: 'email', headerName: 'Email', width: 200 },
+  ];
 
-  // Lấy thông tin người dùng, giáo viên, lớp học, kỳ thi và môn học
+  const studentColumns = [
+    { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
+    { field: 'name', headerName: 'Tên học sinh', width: 200 },
+    { field: 'email', headerName: 'Email', width: 250 },
+  ];
+
+  const classroomScoreColumns = [
+    { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
+    { field: 'name', headerName: 'Tên học sinh', width: 200 },
+    { field: 'score_value', headerName: 'Điểm', width: 100 },
+    { field: 'exam_name', headerName: 'Tên kỳ thi', width: 350 },
+  ];
+
+  const classroomColumns = [
+    { field: 'classroom_code', headerName: 'Mã lớp', width: 200 },
+    { field: 'classroom_name', headerName: 'Tên lớp', width: 150 },
+    { field: 'grade_code', headerName: 'Mã khối', width: 200 },
+    { field: 'student_count', headerName: 'Số học sinh', width: 150 },
+    { field: 'homeroom_teacher_code', headerName: 'Mã giáo viên chủ nhiệm', width: 200 },
+  ];
+
+  const displayedTeachers = teacherFilter === 'all' ? allTeachers : teachersInClassroom;
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const userString = localStorage.getItem('user');
-        let userData = null;
-        userData = userString ? JSON.parse(userString) : null;
+        let userData = userString ? JSON.parse(userString) : null;
         setUser(userData.data);
         setFormData({
           name: userData.data.name || '',
@@ -102,16 +133,15 @@ const TeacherDashboard = () => {
     fetchData();
   }, []);
 
-  // Xử lý thay đổi tab
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (newValue) => {
     if (newValue === 6) {
       handleLogout();
     } else {
       setTabValue(newValue);
+      setMobileOpen(false);
     }
   };
 
-  // Xử lý đăng xuất
   const handleLogout = () => {
     if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
       localStorage.clear();
@@ -120,7 +150,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý tìm kiếm học sinh theo lớp
   useEffect(() => {
     if (classroomCode) {
       const fetchStudents = async () => {
@@ -128,12 +157,10 @@ const TeacherDashboard = () => {
         try {
           const studentsData = await teacherService.getStudentsByClassroom(classroomCode);
           setStudents(studentsData);
-          setScores(
-            studentsData.map((student) => ({
-              student_code: student.student_code || student.id,
-              score_value: 0,
-            }))
-          );
+          setScores(studentsData.map((student) => ({
+            student_code: student.student_code || student.id,
+            score_value: 0,
+          })));
           toast.success('Lấy danh sách học sinh thành công!');
         } catch (error) {
           toast.error(error.response?.data?.message || 'Không thể lấy danh sách học sinh.');
@@ -146,7 +173,6 @@ const TeacherDashboard = () => {
     }
   }, [classroomCode]);
 
-  // Xử lý tìm kiếm giáo viên trong lớp
   const handleFetchTeachersInClassroom = async (e) => {
     e.preventDefault();
     if (!classroomCode) {
@@ -167,7 +193,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý nhập điểm
   const handleEnterScores = async (e) => {
     e.preventDefault();
     if (!classroomCode || !examCode || scores.length === 0) {
@@ -185,7 +210,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý gán giáo viên làm chủ nhiệm
   const handleAssignHomeroom = async (e) => {
     e.preventDefault();
     if (!classroomCode) {
@@ -197,13 +221,12 @@ const TeacherDashboard = () => {
       await teacherService.assignHomeroomClassroom(classroomCode);
       toast.success('Gán giáo viên làm chủ nhiệm thành công!');
     } catch (error) {
-      toast.error('Gán giáo viên làm chủ nhiệm thất bại.');
+      toast.error(error.response?.data?.message || 'Gán giáo viên làm chủ nhiệm thất bại.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý gán giáo viên dạy lớp
   const handleAssignTeaching = async (e) => {
     e.preventDefault();
     if (!classroomCode) {
@@ -215,13 +238,12 @@ const TeacherDashboard = () => {
       await teacherService.assignTeachingClassroom(classroomCode);
       toast.success('Gán giáo viên dạy lớp thành công!');
     } catch (error) {
-      toast.error('Gán giáo viên dạy lớp thất bại.');
+      toast.error(error.response?.data?.message || 'Gán giáo viên dạy lớp thất bại.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý thay đổi điểm của học sinh
   const handleScoreChange = (studentCode, value) => {
     const updatedScores = scores.map((score) =>
       score.student_code === studentCode ? { ...score, score_value: parseFloat(value) || 0 } : score
@@ -229,7 +251,6 @@ const TeacherDashboard = () => {
     setScores(updatedScores);
   };
 
-  // Xử lý lấy điểm của lớp học
   const handleFetchClassroomScores = async (e) => {
     e.preventDefault();
     if (!classroomCode) {
@@ -249,17 +270,14 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý hiển thị lớp chủ nhiệm
   const handleShowHomeroomClassroom = () => {
     if (!user || !user.teacher_code) {
       toast.error('Không thể xác định giáo viên hiện tại. Vui lòng đăng nhập lại.');
       return;
     }
-
     const homeroomClassroom = classroomOptions.find(
       (classroom) => classroom.homeroom_teacher_code === user.teacher_code
     );
-
     if (homeroomClassroom) {
       setClassroomCode(homeroomClassroom.classroom_code);
       toast.success(`Đã chọn lớp chủ nhiệm: ${homeroomClassroom.classroom_name}`);
@@ -269,18 +287,15 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý thay đổi thông tin cá nhân
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý thay đổi file avatar
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, avatar: e.target.files[0] }));
   };
 
-  // Xử lý cập nhật thông tin cá nhân
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -311,7 +326,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý export tất cả điểm
   const handleExportScores = async () => {
     setLoading(true);
     try {
@@ -326,7 +340,6 @@ const TeacherDashboard = () => {
           </a>
         </div>
       );
-      // Tự động mở link tải xuống
       window.open(response.downloadUrl, '_blank');
     } catch (error) {
       toast.error('Không thể export điểm. Vui lòng thử lại.');
@@ -335,7 +348,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý export điểm trung bình học kỳ
   const handleExportStudentTermAverages = async () => {
     setLoading(true);
     try {
@@ -358,7 +370,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Xử lý export điểm trung bình cả năm
   const handleExportStudentYearlyAverages = async () => {
     setLoading(true);
     try {
@@ -381,82 +392,112 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Cột cho DataGrid hiển thị danh sách giáo viên
-  const teacherColumns = [
-    { field: 'teacher_code', headerName: 'Mã giáo viên', width: 150 },
-    { field: 'name', headerName: 'Tên giáo viên', width: 200 },
-    { field: 'email', headerName: 'Email', width: 200 },
-  ];
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
-  // Cột cho DataGrid hiển thị danh sách học sinh
-  const studentColumns = [
-    { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
-    { field: 'name', headerName: 'Tên học sinh', width: 200 },
-    { field: 'email', headerName: 'Email', width: 250 },
-  ];
-
-  // Cột cho DataGrid hiển thị điểm của lớp
-  const classroomScoreColumns = [
-    { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
-    { field: 'name', headerName: 'Tên học sinh', width: 200 },
-    { field: 'score_value', headerName: 'Điểm', width: 100 },
-    { field: 'exam_name', headerName: 'Tên kỳ thi', width: 350 },
-  ];
-
-  const classroomColumns = [
-    { field: 'classroom_code', headerName: 'Mã lớp', width: 200 },
-    { field: 'classroom_name', headerName: 'Tên lớp', width: 150 },
-    { field: 'grade_code', headerName: 'Mã khối', width: 200 },
-    { field: 'student_count', headerName: 'Số học sinh', width: 150 },
-    { field: 'homeroom_teacher_code', headerName: 'Mã giáo viên chủ nhiệm', width: 200 },
-  ];
-
-  // Determine which teachers to display based on the filter
-  const displayedTeachers = teacherFilter === 'all' ? allTeachers : teachersInClassroom;
+  const drawer = (
+    <Box sx={{ width: 250, bgcolor: '#2D3748', height: '100%', color: '#FFFFFF' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', bgcolor: '#4A90E2' }}>
+        <Avatar src={user?.avatarUrl} sx={{ mr: 2 }} />
+        <Typography variant="h6">{user?.name || 'Giáo Viên'}</Typography>
+      </Box>
+      <Divider sx={{ bgcolor: '#718096' }} />
+      <List>
+        {[
+          { text: 'Học sinh', icon: <ClassIcon />, value: 0 },
+          { text: 'Danh sách giáo viên', icon: <PeopleIcon />, value: 1 },
+          { text: 'Nhập điểm', icon: <GradeIcon />, value: 2 },
+          { text: 'Gán lớp', icon: <AssignmentIndIcon />, value: 3 },
+          { text: 'Thông tin cá nhân', icon: <PersonIcon />, value: 4 },
+          { text: 'Xem điểm học sinh', icon: <VisibilityIcon />, value: 5 },
+          { text: 'Đăng xuất', icon: <LogoutIcon sx={{ color: 'red' }} />, value: 6}
+        ].map((item) => (
+          <ListItem
+            key={item.text}
+            onClick={() => handleTabChange(item.value)}
+            sx={{
+              '&:hover': { bgcolor: '#4A90E2' },
+              bgcolor: tabValue === item.value ? '#4A90E2' : 'transparent',
+            }}
+          >
+            <ListItemIcon sx={{ color: '#FFFFFF' }}>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
-    <Box className="teacher-dashboard-container">
-      <Box className="teacher-dashboard-content">
-        <Typography variant="h4" className="teacher-dashboard-title">
-          TEACHCHER
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Drawer for mobile */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          '& .MuiDrawer-paper': { width: 250, boxSizing: 'border-box' },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Drawer for desktop */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          '& .MuiDrawer-paper': { 
+            width: 250, 
+            boxSizing: 'border-box',
+            position: 'fixed', 
+            height: '100%',
+            zIndex: 1200, 
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Main content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          bgcolor: '#F7F9FC',
+          width: { xs: '100%', sm: 'calc(100% - 250px)' },
+          marginLeft: { xs: 0, sm: '250px' }, 
+          transition: 'margin-left 0.3s',
+        }}
+      >
+        <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
+          <Button onClick={handleDrawerToggle}>
+            <MenuIcon />
+          </Button>
+        </Box>
+        <Typography variant="h4" className="dashboard-title">
+          TEACHER
         </Typography>
-
-        {/* Tabs để chuyển đổi giữa các tính năng */}
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          centered
-          className="teacher-dashboard-tabs"
-        >
-          <Tab label="Học sinh" icon={<ClassIcon />} />
-          <Tab label="Danh sách giáo viên" icon={<PeopleIcon />} />
-          <Tab label="Nhập điểm" icon={<GradeIcon />} />
-          <Tab label="Gán lớp" icon={<AssignmentIndIcon />} />
-          <Tab label="Thông tin cá nhân" icon={<PersonIcon />} />
-          <Tab label="Xem điểm học sinh" icon={<VisibilityIcon />} />
-          <Tab label="Đăng xuất" icon={<LogoutIcon />} sx={{ color: 'red' }} />
-        </Tabs>
-
-        {/* Hiển thị loading spinner */}
         {loading && (
-          <Box className="teacher-dashboard-loading">
+          <Box className="dashboard-loading">
             <CircularProgress />
           </Box>
         )}
-
-        {/* Toast container để hiển thị thông báo */}
         <ToastContainer position="top-right" autoClose={3000} />
 
-        {/* Tab 0: Tìm kiếm học sinh theo lớp */}
         {tabValue === 0 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Xem danh sách học sinh theo lớp
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Xem Danh Sách Học Sinh Theo Lớp
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <form style={{ flex: 1 }}>
-                  <FormControl className="teacher-dashboard-form-control" fullWidth>
+                <form className="dashboard-form" style={{ flex: 1 }}>
+                  <FormControl className="dashboard-form-control" fullWidth>
                     <InputLabel>Mã lớp</InputLabel>
                     <Select
                       value={classroomCode}
@@ -474,18 +515,15 @@ const TeacherDashboard = () => {
                 </form>
                 <Button
                   variant="contained"
-                  color="primary"
                   startIcon={<HomeIcon />}
                   onClick={handleShowHomeroomClassroom}
-                  sx={{ height: 'fit-content', alignSelf: 'center' }}
+                  className="dashboard-button"
                 >
                   Lớp chủ nhiệm
                 </Button>
               </Box>
-
-              {/* Hiển thị danh sách học sinh */}
               {students.length > 0 ? (
-                <Box className="teacher-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={students}
                     columns={studentColumns}
@@ -496,7 +534,7 @@ const TeacherDashboard = () => {
                   />
                 </Box>
               ) : (
-                <Typography className="teacher-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có học sinh nào trong lớp này.
                 </Typography>
               )}
@@ -504,17 +542,14 @@ const TeacherDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 1: Danh sách giáo viên (Merged into a single table with filter) */}
         {tabValue === 1 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Danh sách giáo viên
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Danh Sách Giáo Viên
               </Typography>
-
-              {/* Filter controls */}
-              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <FormControl className="teacher-dashboard-form-control">
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Hiển thị</InputLabel>
                   <Select
                     value={teacherFilter}
@@ -525,10 +560,9 @@ const TeacherDashboard = () => {
                     <MenuItem value="classroom">Giáo viên trong lớp</MenuItem>
                   </Select>
                 </FormControl>
-
                 {teacherFilter === 'classroom' && (
-                  <form onSubmit={handleFetchTeachersInClassroom} style={{ display: 'flex', gap: '16px' }}>
-                    <FormControl className="teacher-dashboard-form-control">
+                  <form onSubmit={handleFetchTeachersInClassroom} className="dashboard-form">
+                    <FormControl className="dashboard-form-control">
                       <InputLabel>Mã lớp</InputLabel>
                       <Select
                         value={classroomCode}
@@ -543,16 +577,14 @@ const TeacherDashboard = () => {
                         ))}
                       </Select>
                     </FormControl>
-                    <Button type="submit" variant="contained" color="primary">
+                    <Button type="submit" variant="contained" className="dashboard-button">
                       Tìm kiếm
                     </Button>
                   </form>
                 )}
               </Box>
-
-              {/* Hiển thị danh sách giáo viên trong một bảng duy nhất */}
               {displayedTeachers.length > 0 ? (
-                <Box className="teacher-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={displayedTeachers}
                     columns={teacherColumns}
@@ -563,31 +595,26 @@ const TeacherDashboard = () => {
                   />
                 </Box>
               ) : (
-                <Typography className="teacher-dashboard-no-data">
-                  {teacherFilter === 'all'
-                    ? 'Không có giáo viên nào.'
-                    : 'Không có giáo viên nào trong lớp này.'}
+                <Typography className="dashboard-no-data">
+                  {teacherFilter === 'all' ? 'Không có giáo viên nào.' : 'Không có giáo viên nào trong lớp này.'}
                 </Typography>
               )}
             </CardContent>
           </Card>
         )}
 
-        {/* Tab 2: Nhập điểm cho học sinh */}
         {tabValue === 2 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Nhập điểm cho học sinh
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Nhập Điểm Cho Học Sinh
               </Typography>
-              <form onSubmit={handleEnterScores}>
-                <FormControl className="teacher-dashboard-form-control">
+              <form onSubmit={handleEnterScores} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mã lớp</InputLabel>
                   <Select
                     value={classroomCode}
-                    onChange={(e) => {
-                      setClassroomCode(e.target.value);
-                    }}
+                    onChange={(e) => setClassroomCode(e.target.value)}
                     label="Mã lớp"
                     required
                   >
@@ -598,7 +625,7 @@ const TeacherDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl className="teacher-dashboard-form-control">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mã kỳ thi</InputLabel>
                   <Select
                     value={examCode}
@@ -613,10 +640,8 @@ const TeacherDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-
-                {/* Hiển thị danh sách học sinh để nhập điểm */}
                 {students.length > 0 && (
-                  <TableContainer component={Paper} className="teacher-dashboard-table-container">
+                  <TableContainer component={Paper} className="dashboard-table-container">
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -650,12 +675,10 @@ const TeacherDashboard = () => {
                     </Table>
                   </TableContainer>
                 )}
-
                 <Button
                   type="submit"
                   variant="contained"
-                  color="primary"
-                  className="teacher-dashboard-button"
+                  className="dashboard-button"
                   disabled={students.length === 0}
                 >
                   Nhập điểm
@@ -665,14 +688,13 @@ const TeacherDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 3: Gán giáo viên làm chủ nhiệm hoặc dạy lớp */}
         {tabValue === 3 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Gán giáo viên cho lớp
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Gán Giáo Viên Cho Lớp
               </Typography>
-              <FormControl className="teacher-dashboard-form-control">
+              <FormControl className="dashboard-form-control">
                 <InputLabel>Mã lớp</InputLabel>
                 <Select
                   value={classroomCode}
@@ -687,29 +709,30 @@ const TeacherDashboard = () => {
                   ))}
                 </Select>
               </FormControl>
-              <Box className="teacher-dashboard-button-group">
-                <Button onClick={handleAssignHomeroom} variant="contained" color="primary">
+              <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                <Button onClick={handleAssignHomeroom} variant="contained" className="dashboard-button">
                   Gán làm chủ nhiệm
                 </Button>
-                <Button onClick={handleAssignTeaching} variant="contained" color="secondary">
+                <Button onClick={handleAssignTeaching} variant="contained" className="dashboard-button secondary">
                   Gán dạy lớp
                 </Button>
               </Box>
-              <Typography variant="h6" gutterBottom sx={{ marginTop: 3 }}>
-                Danh sách lớp học
+              <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
+                Danh Sách Lớp Học
               </Typography>
               {classroomOptions.length > 0 ? (
-                <Box className="teacher-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={classroomOptions}
                     columns={classroomColumns}
                     pageSize={5}
                     rowsPerPageOptions={[5, 10, 20]}
                     getRowId={(row) => row.classroom_code}
+                    autoHeight
                   />
                 </Box>
               ) : (
-                <Typography className="teacher-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có lớp học nào.
                 </Typography>
               )}
@@ -717,43 +740,32 @@ const TeacherDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 4: Thông tin cá nhân */}
         {tabValue === 4 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content personal-info-card">
-              <Typography variant="h6" gutterBottom className="personal-info-title">
-                Thông tin cá nhân
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Thông Tin Cá Nhân
               </Typography>
               {user ? (
-                <Box className="personal-info-container">
-                  <Box className="personal-info-item avatar-section">
+                <Box className="profile-container">
+                  <Box className="profile-avatar-section">
                     {user.avatarUrl ? (
-                      <img
-                        src={user.avatarUrl}
-                        alt="Avatar"
-                        className="personal-info-avatar"
-                        style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-                      />
+                      <img src={user.avatarUrl} alt="Avatar" className="profile-avatar" />
                     ) : (
-                      <PersonIcon style={{ fontSize: '100px', color: '#ccc' }} />
+                      <PersonIcon className="profile-avatar-placeholder" />
                     )}
                   </Box>
-
                   <Button
                     variant="contained"
-                    color={isEditing ? 'secondary' : 'primary'}
                     onClick={() => setIsEditing(!isEditing)}
-                    sx={{ mb: 2 }}
+                    className={`dashboard-button ${isEditing ? 'secondary' : ''}`}
                   >
                     {isEditing ? 'Hủy' : 'Chỉnh sửa thông tin'}
                   </Button>
-
                   {isEditing ? (
-                    <form onSubmit={handleUpdateProfile}>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Họ và tên:
-                        </Typography>
+                    <form onSubmit={handleUpdateProfile} className="profile-form">
+                      <Box className="profile-item">
+                        <Typography>Họ và tên:</Typography>
                         <TextField
                           name="name"
                           value={formData.name}
@@ -761,14 +773,11 @@ const TeacherDashboard = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          sx={{ maxWidth: '300px' }}
                           required
                         />
                       </Box>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Email:
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Email:</Typography>
                         <TextField
                           name="email"
                           value={formData.email}
@@ -776,65 +785,41 @@ const TeacherDashboard = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          sx={{ maxWidth: '300px' }}
                           type="email"
                           required
                         />
                       </Box>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Avatar:
-                        </Typography>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          style={{ marginTop: '10px' }}
-                        />
+                      <Box className="profile-item">
+                        <Typography>Avatar:</Typography>
+                        <input type="file" accept="image/*" onChange={handleFileChange} />
                       </Box>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Mã giáo viên:
-                        </Typography>
-                        <Typography variant="body1" className="personal-info-value">
-                          {user.teacher_code || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Mã giáo viên:</Typography>
+                        <Typography>{user.teacher_code || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                      <Button type="submit" variant="contained" className="dashboard-button">
                         Lưu thay đổi
                       </Button>
                     </form>
                   ) : (
-                    <>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Họ và tên:
-                        </Typography>
-                        <Typography variant="body1" className="personal-info-value">
-                          {user.name || 'Không có thông tin'}
-                        </Typography>
+                    <Box className="profile-details">
+                      <Box className="profile-item">
+                        <Typography>Họ và tên:</Typography>
+                        <Typography>{user.name || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Email:
-                        </Typography>
-                        <Typography variant="body1" className="personal-info-value">
-                          {user.email || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Email:</Typography>
+                        <Typography>{user.email || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Box className="personal-info-item">
-                        <Typography variant="body1" className="personal-info-label">
-                          Mã giáo viên:
-                        </Typography>
-                        <Typography variant="body1" className="personal-info-value">
-                          {user.teacher_code || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Mã giáo viên:</Typography>
+                        <Typography>{user.teacher_code || 'Không có thông tin'}</Typography>
                       </Box>
-                    </>
+                    </Box>
                   )}
                 </Box>
               ) : (
-                <Typography className="teacher-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có thông tin người dùng. Vui lòng đăng nhập lại.
                 </Typography>
               )}
@@ -842,15 +827,14 @@ const TeacherDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 5: Xem điểm học sinh */}
         {tabValue === 5 && (
-          <Card className="teacher-dashboard-card">
-            <CardContent className="teacher-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Xem điểm học sinh
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Xem Điểm Học Sinh
               </Typography>
-              <form onSubmit={handleFetchClassroomScores}>
-                <FormControl className="teacher-dashboard-form-control">
+              <form onSubmit={handleFetchClassroomScores} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mã lớp</InputLabel>
                   <Select
                     value={classroomCode}
@@ -865,7 +849,7 @@ const TeacherDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl className="teacher-dashboard-form-control">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mã kỳ thi</InputLabel>
                   <Select
                     value={examCode}
@@ -880,7 +864,7 @@ const TeacherDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl className="teacher-dashboard-form-control">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mã môn học</InputLabel>
                   <Select
                     value={subjectCode}
@@ -895,50 +879,38 @@ const TeacherDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  className="teacher-dashboard-button"
-                >
+                <Button type="submit" variant="contained" className="dashboard-button">
                   Xem điểm
                 </Button>
               </form>
-
-              {/* Thêm các nút export */}
               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                 <Button
                   variant="contained"
-                  color="secondary"
                   startIcon={<DownloadIcon />}
                   onClick={handleExportScores}
-                  className="teacher-dashboard-button"
+                  className="dashboard-button secondary"
                 >
                   Export Tất Cả Điểm
                 </Button>
                 <Button
                   variant="contained"
-                  color="secondary"
                   startIcon={<DownloadIcon />}
                   onClick={handleExportStudentTermAverages}
-                  className="teacher-dashboard-button"
+                  className="dashboard-button secondary"
                 >
                   Export Điểm TB Học Kỳ
                 </Button>
                 <Button
                   variant="contained"
-                  color="secondary"
                   startIcon={<DownloadIcon />}
                   onClick={handleExportStudentYearlyAverages}
-                  className="teacher-dashboard-button"
+                  className="dashboard-button secondary"
                 >
                   Export Điểm TB Cả Năm
                 </Button>
               </Box>
-
-              {/* Hiển thị danh sách điểm với DataGrid */}
               {classroomScores.length > 0 ? (
-                <Box className="teacher-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={classroomScores.map((score, index) => {
                       const student = students.find((s) => s.student_code === score.student_code);
@@ -958,7 +930,7 @@ const TeacherDashboard = () => {
                   />
                 </Box>
               ) : (
-                <Typography className="teacher-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có điểm nào cho lớp này.
                 </Typography>
               )}

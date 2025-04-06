@@ -1,301 +1,189 @@
 /* src/styles/TeacherDashboard.css */
 .teacher-dashboard-container {
   min-height: 100vh;
-  width: 100%;
   background: linear-gradient(to right, #e0f7fa, #78c7ec);
+  font-family: 'Roboto', sans-serif;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
 }
 
-.teacher-dashboard-content {
-  max-width: 1200px;
-  width: 100%;
-}
-
-.teacher-dashboard-title {
-  color: #1976d2;
+.dashboard-title {
+  color: #2D3748;
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 24px;
   text-align: center;
-  margin-bottom: 24px;
 }
 
-.teacher-dashboard-tabs {
-  margin-bottom: 24px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.teacher-dashboard-loading {
+.dashboard-loading {
   display: flex;
   justify-content: center;
-  margin-bottom: 16px;
+  margin: 20px 0;
 }
 
-.teacher-dashboard-card {
-  margin-bottom: 24px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  background-color: white;
-}
-
-.teacher-dashboard-card-content {
-  padding: 16px;
-}
-
-.teacher-dashboard-form-control {
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.teacher-dashboard-button {
-  margin-top: 20px;   
-}
-
-.teacher-dashboard-table-container {
-  margin-top: 16px;
-}
-
-.teacher-dashboard-data-grid {
-  width: 100%;
-  margin-top: 16px;
-}
-
-.teacher-dashboard-no-data {
-  margin-top: 16px;
-}
-
-.teacher-dashboard-button-group {
-  display: flex;
-  gap: 20px;
-}
-
-@media (max-width: 600px) {
-  .teacher-dashboard-container {
-    padding: 16px;
-  }
-  .teacher-dashboard-content {
-    max-width: 100%;
-  }
-}
-
-@keyframes gradientAnimation {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* -------------------- Thông tin cá nhân -------------------- */
-/* Specific styling for the personal info card */
-.personal-info-card {
-  background: linear-gradient(145deg, #ffffff, #f5f7fa);
-  border: none;
+.dashboard-card {
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: #FFFFFF;
+  margin-bottom: 24px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.personal-info-card:hover {
+.dashboard-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Title styling */
-.personal-info-title {
-  color: #1976d2;
-  font-weight: 700;
-  font-size: 1.5rem;
-  margin-bottom: 30px;
-  text-align: center;
-  position: relative;
-}
-
-.personal-info-title::after {
-  content: '';
-  width: 60px;
-  height: 3px;
-  background-color: #1976d2;
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 2px;
-}
-
-/* Container for personal info items */
-.personal-info-container {
+.dashboard-form {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-/* Avatar section */
-.avatar-section {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-
-.personal-info-avatar {
-  width: 120px !important;
-  height: 120px !important;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid #1976d2;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.personal-info-avatar:hover {
-  transform: scale(1.05);
-}
-
-/* Styling for each personal info item */
-.personal-info-item {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  background: #fafafa;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  border-left: 4px solid #1976d2;
-}
-
-.personal-info-item:hover {
-  background: #f0f4f8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateX(5px);
-}
-
-/* Label styling */
-.personal-info-label {
-  font-weight: 600;
-  color: #2c3e50;
+.dashboard-form-control {
   flex: 1;
-  min-width: 150px;
-  font-size: 1rem;
+  min-width: 200px;
 }
 
-/* Value styling */
-.personal-info-value {
-  color: #34495e;
-  flex: 2;
-  font-size: 1rem;
-  font-weight: 400;
+.dashboard-form-control .MuiInputLabel-root {
+  color: #718096;
 }
 
-/* Form input styling (for edit mode) */
-.personal-info-item .MuiTextField-root {
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.dashboard-form-control .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #4A90E2;
 }
 
-.personal-info-item .MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #1976d2;
+.dashboard-form-control .Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #4A90E2;
 }
 
-/* File input styling */
-.personal-info-item input[type="file"] {
-  padding: 10px 0;
-  color: #34495e;
-  font-size: 0.9rem;
-}
-
-.personal-info-item input[type="file"]::-webkit-file-upload-button {
-  background-color: #1976d2;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.personal-info-item input[type="file"]::-webkit-file-upload-button:hover {
-  background-color: #1565c0;
-}
-
-/* Button styling */
-.personal-info-container .MuiButton-root {
-  border-radius: 6px;
+.dashboard-button {
+  background: #4A90E2;
+  color: #FFFFFF;
+  border-radius: 8px;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
-.personal-info-container .MuiButton-containedPrimary {
-  background-color: #1976d2;
-}
-
-.personal-info-container .MuiButton-containedPrimary:hover {
-  background-color: #1565c0;
+.dashboard-button:hover {
+  background: #357ABD;
   transform: translateY(-2px);
 }
 
-.personal-info-container .MuiButton-containedSecondary {
-  background-color: #e57373;
+.dashboard-button.secondary {
+  background: #F5A623;
 }
 
-.personal-info-container .MuiButton-containedSecondary:hover {
-  background-color: #d32f2f;
-  transform: translateY(-2px);
+.dashboard-button.secondary:hover {
+  background: #D48F1F;
 }
 
-/* No data message styling */
-.teacher-dashboard-no-data {
+.dashboard-data-grid {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.dashboard-table-container {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dashboard-table-container .MuiTableHead-root {
+  background: #E6ECF5;
+}
+
+.dashboard-table-container .MuiTableCell-head {
+  color: #2D3748;
+  font-weight: 500;
+}
+
+.dashboard-no-data {
   text-align: center;
-  color: #888;
+  color: #718096;
   margin-top: 20px;
   font-style: italic;
 }
 
-/* Responsive adjustments */
+.profile-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-avatar-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #4A90E2;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.profile-avatar-placeholder {
+  font-size: 120px;
+  color: #718096;
+}
+
+.profile-form, .profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: #F7F9FC;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.profile-item:hover {
+  background: #E6ECF5;
+}
+
+.profile-item > *:first-child {
+  font-weight: 500;
+  color: #2D3748;
+  min-width: 120px;
+}
+
 @media (max-width: 600px) {
-  .personal-info-card {
-    padding: 16px;
-  }
-
-  .personal-info-container {
-    padding: 15px;
-  }
-
-  .personal-info-item {
+  .teacher-dashboard-container {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 15px;
-    border-left: 3px solid #1976d2;
   }
 
-  .personal-info-label {
-    margin-bottom: 8px;
+  .dashboard-form {
+    flex-direction: column;
+  }
+
+  .dashboard-form-control {
     min-width: 100%;
   }
 
-  .personal-info-value {
-    text-align: left;
-    width: 100%;
+  .profile-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .personal-info-item .MuiTextField-root {
-    width: 100%;
-  }
-
-  .avatar-section {
-    margin-bottom: 20px;
-  }
-
-  .personal-info-avatar {
-    width: 100px !important;
-    height: 100px !important;
+  .profile-item > *:first-child {
+    min-width: 100%;
+    margin-bottom: 8px;
   }
 }

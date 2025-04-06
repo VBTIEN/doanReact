@@ -49,7 +49,6 @@ export const getAllExams = async () => {
 export const getAllGrades = async () => {
   try {
     const response = await publicApi.get('/grades');
-    console.log("grades:", response.data.data);
     return Array.isArray(response.data.data) ? response.data.data : [];
   } catch (error) {
     console.error('Error fetching grades:', error.response?.data || error.message);
@@ -72,7 +71,6 @@ export const getAllSchoolYears = async () => {
 export const getAllSubjects = async () => {
   try {
     const response = await publicApi.get('/subjects');
-    console.log("subjects:", response.data.data);
     return Array.isArray(response.data.data) ? response.data.data : [];
   } catch (error) {
     console.error('Error fetching subjects:', error.response?.data || error.message);
@@ -94,7 +92,6 @@ export const getAllTerms = async () => {
 // API để lấy xếp hạng theo lớp và học kỳ
 export const getClassroomTermRankings = async (classroomCode, termCode) => {
   try {
-    console.log('Fetching classroom-term rankings for classroom:', classroomCode, 'term:', termCode);
     const response = await publicApi.post('/rankings/classroom-term', {
       classroom_code: classroomCode,
       term_code: termCode,
@@ -109,7 +106,6 @@ export const getClassroomTermRankings = async (classroomCode, termCode) => {
 // API để lấy xếp hạng theo khối và học kỳ
 export const getGradeTermRankings = async (gradeCode, termCode) => {
   try {
-    console.log('Fetching grade-term rankings for grade:', gradeCode, 'term:', termCode);
     const response = await publicApi.post('/rankings/grade-term', {
       grade_code: gradeCode,
       term_code: termCode,
@@ -124,7 +120,6 @@ export const getGradeTermRankings = async (gradeCode, termCode) => {
 // API để lấy xếp hạng theo lớp trong cả năm
 export const getClassroomYearlyRankings = async (classroomCode) => {
   try {
-    console.log('Fetching classroom-yearly rankings for classroom:', classroomCode);
     const response = await publicApi.post('/rankings/classroom-yearly', {
       classroom_code: classroomCode,
     });
@@ -138,7 +133,6 @@ export const getClassroomYearlyRankings = async (classroomCode) => {
 // API để lấy xếp hạng theo khối trong cả năm
 export const getGradeYearlyRankings = async (gradeCode) => {
   try {
-    console.log('Fetching grade-yearly rankings for grade:', gradeCode);
     const response = await publicApi.post('/rankings/grade-yearly', {
       grade_code: gradeCode,
     });
@@ -152,7 +146,6 @@ export const getGradeYearlyRankings = async (gradeCode) => {
 // API để lấy danh sách học sinh theo học lực (classroom-term)
 export const getClassroomTermAcademicPerformance = async (classroomCode, termCode, academicPerformance) => {
   try {
-    console.log('Fetching classroom-term academic performance for classroom:', classroomCode, 'term:', termCode, 'performance:', academicPerformance);
     const response = await publicApi.post('/academic-performance/classroom-term', {
       classroom_code: classroomCode,
       term_code: termCode,
@@ -168,7 +161,6 @@ export const getClassroomTermAcademicPerformance = async (classroomCode, termCod
 // API để lấy danh sách học sinh theo học lực (classroom-yearly)
 export const getClassroomYearlyAcademicPerformance = async (classroomCode, academicPerformance) => {
   try {
-    console.log('Fetching classroom-yearly academic performance for classroom:', classroomCode, 'performance:', academicPerformance);
     const response = await publicApi.post('/academic-performance/classroom-yearly', {
       classroom_code: classroomCode,
       academic_performance: academicPerformance,
@@ -183,7 +175,6 @@ export const getClassroomYearlyAcademicPerformance = async (classroomCode, acade
 // API để lấy danh sách học sinh theo học lực (grade-term)
 export const getGradeTermAcademicPerformance = async (gradeCode, termCode, academicPerformance) => {
   try {
-    console.log('Fetching grade-term academic performance for grade:', gradeCode, 'term:', termCode, 'performance:', academicPerformance);
     const response = await publicApi.post('/academic-performance/grade-term', {
       grade_code: gradeCode,
       term_code: termCode,
@@ -199,7 +190,6 @@ export const getGradeTermAcademicPerformance = async (gradeCode, termCode, acade
 // API để lấy danh sách học sinh theo học lực (grade-yearly)
 export const getGradeYearlyAcademicPerformance = async (gradeCode, academicPerformance) => {
   try {
-    console.log('Fetching grade-yearly academic performance for grade:', gradeCode, 'performance:', academicPerformance);
     const response = await publicApi.post('/academic-performance/grade-yearly', {
       grade_code: gradeCode,
       academic_performance: academicPerformance,
@@ -214,7 +204,6 @@ export const getGradeYearlyAcademicPerformance = async (gradeCode, academicPerfo
 // API để export tất cả điểm
 export const exportScores = async () => {
   try {
-    console.log('Exporting all scores...');
     const response = await publicApi.get('/export-scores');
     if (response.data.status === 'success') {
       return response.data; 
@@ -230,7 +219,6 @@ export const exportScores = async () => {
 // API để export điểm trung bình học kỳ của học sinh
 export const exportStudentTermAverages = async () => {
   try {
-    console.log('Exporting student term averages...');
     const response = await publicApi.get('/export-student-term-averages');
     if (response.data.status === 'success') {
       return response.data;
@@ -246,7 +234,6 @@ export const exportStudentTermAverages = async () => {
 // API để export điểm trung bình cả năm của học sinh
 export const exportStudentYearlyAverages = async () => {
   try {
-    console.log('Exporting student yearly averages...');
     const response = await publicApi.get('/export-student-yearly-averages');
     if (response.data.status === 'success') {
       return response.data;

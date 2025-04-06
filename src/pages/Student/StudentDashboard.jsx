@@ -9,14 +9,19 @@ import {
   Typography,
   TextField,
   Button,
-  Tabs,
-  Tab,
   CircularProgress,
   MenuItem,
   Select,
   InputLabel,
   FormControl,
   Paper,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Avatar,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { ToastContainer, toast } from 'react-toastify';
@@ -27,6 +32,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SchoolIcon from '@mui/icons-material/School';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DownloadIcon from '@mui/icons-material/Download';
+import MenuIcon from '@mui/icons-material/Menu';
 import '../../styles/StudentDashboard.css';
 
 const StudentDashboard = () => {
@@ -43,8 +49,6 @@ const StudentDashboard = () => {
     email: '',
     avatar: null,
   });
-
-  // State for rankings
   const [rankingType, setRankingType] = useState('classroom-term');
   const [classroomCode, setClassroomCode] = useState('');
   const [gradeCode, setGradeCode] = useState('');
@@ -56,13 +60,13 @@ const StudentDashboard = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [examOptions, setExamOptions] = useState([]);
   const [downloadUrl, setDownloadUrl] = useState(null);
-
-  // State for academic performance
   const [academicPerformanceType, setAcademicPerformanceType] = useState('classroom-term');
   const [academicPerformanceLevel, setAcademicPerformanceLevel] = useState('');
   const [academicPerformanceData, setAcademicPerformanceData] = useState([]);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Define columns for the scores DataGrid
+  const academicPerformanceLevels = ['Yếu', 'Trung bình', 'Khá', 'Giỏi', 'Xuất sắc'];
+
   const scoreColumns = [
     { field: 'exam_name', headerName: 'Tên bài kiểm tra', width: 200 },
     { field: 'subject_code', headerName: 'Mã môn học', width: 120 },
@@ -70,7 +74,6 @@ const StudentDashboard = () => {
     { field: 'date', headerName: 'Ngày', width: 150 },
   ];
 
-  // Define columns for the rankings DataGrid
   const rankingColumns = [
     { field: 'rank', headerName: 'Xếp hạng', width: 100 },
     { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
@@ -78,7 +81,6 @@ const StudentDashboard = () => {
     { field: 'term_average', headerName: 'Điểm trung bình', width: 150 },
   ];
 
-  // Define columns for the academic performance DataGrid
   const academicPerformanceColumns = [
     { field: 'student_code', headerName: 'Mã học sinh', width: 150 },
     { field: 'name', headerName: 'Tên học sinh', width: 200 },
@@ -86,24 +88,12 @@ const StudentDashboard = () => {
     { field: 'academic_performance', headerName: 'Học lực', width: 150 },
   ];
 
-  // List of academic performance levels
-  const academicPerformanceLevels = [
-    'Yếu',
-    'Trung bình',
-    'Khá',
-    'Giỏi',
-    'Xuất sắc',
-  ];
-
-  // Lấy thông tin người dùng và các tùy chọn (lớp, khối, học kỳ, môn học, bài kiểm tra)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Lấy thông tin người dùng
         const userString = localStorage.getItem('user');
-        let userData = null;
-        userData = userString ? JSON.parse(userString) : null;
+        let userData = userString ? JSON.parse(userString) : null;
         setUser(userData.data);
         setFormData({
           name: userData.data.name || '',
@@ -111,70 +101,53 @@ const StudentDashboard = () => {
           avatar: null,
         });
 
-        // Lấy danh sách lớp học
         const classrooms = await getAll.getAllClassrooms();
-        setClassroomOptions([
-          ...classrooms.map((classroom) => ({
-            classroom_code: classroom.classroom_code,
-            classroom_name: classroom.classroom_name,
-          })),
-        ]);
+        setClassroomOptions(classrooms.map((classroom) => ({
+          classroom_code: classroom.classroom_code,
+          classroom_name: classroom.classroom_name,
+        })));
 
-        // Lấy danh sách khối
         const grades = await getAll.getAllGrades();
-        setGradeOptions([
-          ...grades.map((grade) => ({
-            grade_code: grade.grade_code,
-            grade_name: grade.grade_name,
-          })),
-        ]);
+        setGradeOptions(grades.map((grade) => ({
+          grade_code: grade.grade_code,
+          grade_name: grade.grade_name,
+        })));
 
-        // Lấy danh sách học kỳ
         const terms = await getAll.getAllTerms();
-        setTermOptions([
-          ...terms.map((term) => ({
-            term_code: term.term_code,
-            term_name: term.term_name,
-          })),
-        ]);
+        setTermOptions(terms.map((term) => ({
+          term_code: term.term_code,
+          term_name: term.term_name,
+        })));
 
-        // Lấy danh sách môn học
         const subjects = await getAll.getAllSubjects();
-        setSubjectOptions([
-          ...subjects.map((subject) => ({
-            subject_code: subject.subject_code,
-            subject_name: subject.subject_name,
-          })),
-        ]);
+        setSubjectOptions(subjects.map((subject) => ({
+          subject_code: subject.subject_code,
+          subject_name: subject.subject_name,
+        })));
 
-        // Lấy danh sách bài kiểm tra
         const exams = await getAll.getAllExams();
-        setExamOptions([
-          ...exams.map((exam) => ({
-            exam_code: exam.exam_code,
-            exam_name: exam.exam_name,
-          })),
-        ]);
+        setExamOptions(exams.map((exam) => ({
+          exam_code: exam.exam_code,
+          exam_name: exam.exam_name,
+        })));
       } catch (error) {
         toast.error('Không thể lấy thông tin hoặc dữ liệu cần thiết.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  // Xử lý thay đổi tab
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (newValue) => {
     if (newValue === 4) {
       handleLogout();
     } else {
       setTabValue(newValue);
+      setMobileOpen(false);
     }
   };
 
-  // Xử lý đăng xuất
   const handleLogout = () => {
     if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
       localStorage.clear();
@@ -183,8 +156,6 @@ const StudentDashboard = () => {
     }
   };
 
-
-  // Xử lý lấy điểm của học sinh
   const handleFetchScores = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -209,7 +180,6 @@ const StudentDashboard = () => {
     }
   };
 
-  // Xử lý lấy xếp hạng
   const handleFetchRankings = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -264,7 +234,6 @@ const StudentDashboard = () => {
       setRankings(mappedRankings);
       toast.success('Lấy xếp hạng thành công!');
     } catch (error) {
-      console.error('Error fetching rankings:', error);
       toast.error(error.message || 'Không thể lấy xếp hạng.');
       setRankings([]);
     } finally {
@@ -272,7 +241,6 @@ const StudentDashboard = () => {
     }
   };
 
-  // Xử lý lấy danh sách học sinh theo học lực
   const handleFetchAcademicPerformance = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -328,7 +296,6 @@ const StudentDashboard = () => {
         default:
           throw new Error('Loại học lực không hợp lệ.');
       }
-      console.log('performanceData: ', performanceData);
       if (!performanceData.students || !Array.isArray(performanceData.students)) {
         throw new Error('Dữ liệu học lực không hợp lệ.');
       }
@@ -342,7 +309,6 @@ const StudentDashboard = () => {
       setAcademicPerformanceData(mappedPerformanceData);
       toast.success('Lấy danh sách học sinh theo học lực thành công!');
     } catch (error) {
-      console.error('Error fetching academic performance:', error);
       toast.error(error.message || 'Không thể lấy danh sách học sinh theo học lực.');
       setAcademicPerformanceData([]);
     } finally {
@@ -350,18 +316,15 @@ const StudentDashboard = () => {
     }
   };
 
-  // Xử lý thay đổi thông tin cá nhân
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý thay đổi file avatar
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, avatar: e.target.files[0] }));
   };
 
-  // Xử lý cập nhật thông tin cá nhân
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -391,6 +354,7 @@ const StudentDashboard = () => {
       setLoading(false);
     }
   };
+
   const handleExportStudentScores = async () => {
     setLoading(true);
     try {
@@ -405,7 +369,6 @@ const StudentDashboard = () => {
           </a>
         </div>
       );
-      // Tự động mở link tải xuống
       window.open(response.downloadUrl, '_blank');
     } catch (error) {
       toast.error('Không thể export điểm. Vui lòng thử lại.');
@@ -414,46 +377,110 @@ const StudentDashboard = () => {
     }
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const drawer = (
+    <Box sx={{ width: 250, bgcolor: '#2D3748', height: '100%', color: '#FFFFFF' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', bgcolor: '#4A90E2' }}>
+        <Avatar src={user?.avatarUrl} sx={{ mr: 2 }} />
+        <Typography variant="h6">{user?.name || 'Học Sinh'}</Typography>
+      </Box>
+      <Divider sx={{ bgcolor: '#718096' }} />
+      <List>
+        {[
+          { text: 'Xem điểm', icon: <GradeIcon />, value: 0 },
+          { text: 'Thông tin cá nhân', icon: <PersonIcon />, value: 1 },
+          { text: 'Xem xếp hạng', icon: <EmojiEventsIcon />, value: 2 },
+          { text: 'Học lực', icon: <SchoolIcon />, value: 3 },
+          { text: 'Đăng xuất', icon: <LogoutIcon sx={{ color: 'red' }} />, value: 4}
+          
+        ].map((item) => (
+          <ListItem
+            key={item.text}
+            onClick={() => handleTabChange(item.value)}
+            sx={{
+              '&:hover': { bgcolor: '#4A90E2' },
+              bgcolor: tabValue === item.value ? '#4A90E2' : 'transparent',
+            }}
+          >
+            <ListItemIcon sx={{ color: '#FFFFFF' }}>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
-    <Box className="student-dashboard-container">
-      <Box className="student-dashboard-content">
-        <Typography variant="h4" className="student-dashboard-title">
-          Trang Quản Lý Học Sinh
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Drawer for mobile */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', sm: 'none' },
+          '& .MuiDrawer-paper': { width: 250, boxSizing: 'border-box' },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Drawer for desktop */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          '& .MuiDrawer-paper': { 
+            width: 250, 
+            boxSizing: 'border-box' ,
+            position: 'fixed', 
+            height: '100%',
+            zIndex: 1200, 
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Main content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          bgcolor: '#F7F9FC',
+          width: { xs: '100%', sm: 'calc(100% - 250px)'}, 
+          marginLeft: { xs: 0, sm: '250px' },
+          transition: 'margin-left 0.3s',
+        }}
+      > 
+        <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
+          <Button onClick={handleDrawerToggle}>
+            <MenuIcon />
+          </Button>
+        </Box>
+        <Typography variant="h4" className="dashboard-title">
+          STUDENT
         </Typography>
-
-        {/* Tabs để chuyển đổi giữa các tính năng */}
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          centered
-          className="student-dashboard-tabs"
-        >
-          <Tab label="Xem điểm" icon={<GradeIcon />} />
-          <Tab label="Thông tin cá nhân" icon={<PersonIcon />} />
-          <Tab label="Xem xếp hạng" icon={<EmojiEventsIcon />} />
-          <Tab label="Học lực" icon={<SchoolIcon />} /> 
-          <Tab label="Đăng xuất" icon={<LogoutIcon /> } sx={{ color: 'red' }}/>
-        </Tabs>
-
-        {/* Hiển thị loading spinner */}
         {loading && (
-          <Box className="student-dashboard-loading">
+          <Box className="dashboard-loading">
             <CircularProgress />
           </Box>
         )}
-
-        {/* Toast container để hiển thị thông báo */}
         <ToastContainer position="top-right" autoClose={3000} />
 
-        {/* Tab 0: Xem điểm */}
         {tabValue === 0 && (
-          <Card className="student-dashboard-card">
-            <CardContent className="student-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Xem điểm
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Xem Điểm
               </Typography>
-              <form onSubmit={handleFetchScores}>
-                <FormControl className="student-dashboard-form-control">
+              <form onSubmit={handleFetchScores} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Môn học</InputLabel>
                   <Select
                     value={subjectCode}
@@ -467,7 +494,7 @@ const StudentDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl className="student-dashboard-form-control">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Học kỳ</InputLabel>
                   <Select
                     value={termCode}
@@ -481,42 +508,37 @@ const StudentDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  className="student-dashboard-button"
-                >
-                  Xem điểm
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleExportStudentScores}
-                  disabled={loading}
-                >
-                  Export Điểm Của Bạn
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    className="dashboard-button"
+                  >
+                    Xem điểm
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    onClick={handleExportStudentScores}
+                    disabled={loading}
+                    className="dashboard-button secondary"
+                  >
+                    Export Điểm
+                  </Button>
+                </Box>
               </form>
-
-              {/* Hiển thị danh sách điểm với DataGrid */}
               {scores.length > 0 ? (
-                <Box className="student-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={scores}
                     columns={scoreColumns}
-                    initialState={{
-                      pagination: {
-                        paginationModel: { pageSize: 5 },
-                      },
-                    }}
+                    initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
                     pageSizeOptions={[5, 10, 20]}
                     autoHeight
                   />
                 </Box>
               ) : (
-                <Typography className="student-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có điểm nào cho môn học và học kỳ này.
                 </Typography>
               )}
@@ -524,41 +546,32 @@ const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 1: Thông tin cá nhân */}
         {tabValue === 1 && (
-          <Card className="student-dashboard-card">
-            <CardContent className="student-dashboard-card-content student-personal-info-card">
-              <Typography variant="h6" gutterBottom className="student-personal-info-title">
-                Thông tin cá nhân
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Thông Tin Cá Nhân
               </Typography>
               {user ? (
-                <Box className="student-personal-info-container">
-                  <Box className="student-personal-info-item student-avatar-section">
+                <Box className="profile-container">
+                  <Box className="profile-avatar-section">
                     {user.avatarUrl ? (
-                      <img
-                        src={user.avatarUrl}
-                        alt="Avatar"
-                        className="student-personal-info-avatar"
-                        style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-                      />
+                      <img src={user.avatarUrl} alt="Avatar" className="profile-avatar" />
                     ) : (
-                      <PersonIcon style={{ fontSize: '100px', color: '#ccc' }} />
+                      <PersonIcon className="profile-avatar-placeholder" />
                     )}
                   </Box>
                   <Button
                     variant="contained"
-                    color={isEditing ? 'secondary' : 'primary'}
                     onClick={() => setIsEditing(!isEditing)}
-                    sx={{ mb: 2 }}
+                    className={`dashboard-button ${isEditing ? 'secondary' : ''}`}
                   >
                     {isEditing ? 'Hủy' : 'Chỉnh sửa thông tin'}
                   </Button>
                   {isEditing ? (
-                    <form onSubmit={handleUpdateProfile}>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Họ và tên:
-                        </Typography>
+                    <form onSubmit={handleUpdateProfile} className="profile-form">
+                      <Box className="profile-item">
+                        <Typography>Họ và tên:</Typography>
                         <TextField
                           name="name"
                           value={formData.name}
@@ -566,14 +579,11 @@ const StudentDashboard = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          sx={{ maxWidth: '300px' }}
                           required
                         />
                       </Box>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Email:
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Email:</Typography>
                         <TextField
                           name="email"
                           value={formData.email}
@@ -581,65 +591,41 @@ const StudentDashboard = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
-                          sx={{ maxWidth: '300px' }}
                           type="email"
                           required
                         />
                       </Box>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Avatar:
-                        </Typography>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          style={{ marginTop: '10px' }}
-                        />
+                      <Box className="profile-item">
+                        <Typography>Avatar:</Typography>
+                        <input type="file" accept="image/*" onChange={handleFileChange} />
                       </Box>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Mã học sinh:
-                        </Typography>
-                        <Typography variant="body1" className="student-personal-info-value">
-                          {user.student_code || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Mã học sinh:</Typography>
+                        <Typography>{user.student_code || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                      <Button type="submit" variant="contained" className="dashboard-button">
                         Lưu thay đổi
                       </Button>
                     </form>
                   ) : (
-                    <>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Họ và tên:
-                        </Typography>
-                        <Typography variant="body1" className="student-personal-info-value">
-                          {user.name || 'Không có thông tin'}
-                        </Typography>
+                    <Box className="profile-details">
+                      <Box className="profile-item">
+                        <Typography>Họ và tên:</Typography>
+                        <Typography>{user.name || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Email:
-                        </Typography>
-                        <Typography variant="body1" className="student-personal-info-value">
-                          {user.email || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Email:</Typography>
+                        <Typography>{user.email || 'Không có thông tin'}</Typography>
                       </Box>
-                      <Box className="student-personal-info-item">
-                        <Typography variant="body1" className="student-personal-info-label">
-                          Mã học sinh:
-                        </Typography>
-                        <Typography variant="body1" className="student-personal-info-value">
-                          {user.student_code || 'Không có thông tin'}
-                        </Typography>
+                      <Box className="profile-item">
+                        <Typography>Mã học sinh:</Typography>
+                        <Typography>{user.student_code || 'Không có thông tin'}</Typography>
                       </Box>
-                    </>
+                    </Box>
                   )}
                 </Box>
               ) : (
-                <Typography className="student-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có thông tin người dùng. Vui lòng đăng nhập lại.
                 </Typography>
               )}
@@ -647,15 +633,14 @@ const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 2: Xem xếp hạng */}
         {tabValue === 2 && (
-          <Card className="student-dashboard-card">
-            <CardContent className="student-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Xem xếp hạng
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Xem Xếp Hạng
               </Typography>
-              <form onSubmit={handleFetchRankings}>
-                <FormControl className="student-dashboard-form-control">
+              <form onSubmit={handleFetchRankings} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Loại xếp hạng</InputLabel>
                   <Select
                     value={rankingType}
@@ -669,9 +654,8 @@ const StudentDashboard = () => {
                     <MenuItem value="grade-yearly">Xếp hạng theo khối cả năm</MenuItem>
                   </Select>
                 </FormControl>
-
                 {(rankingType === 'classroom-term' || rankingType === 'classroom-yearly') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Lớp học</InputLabel>
                     <Select
                       value={classroomCode}
@@ -687,9 +671,8 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
                 {(rankingType === 'grade-term' || rankingType === 'grade-yearly') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Khối</InputLabel>
                     <Select
                       value={gradeCode}
@@ -705,9 +688,8 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
                 {(rankingType === 'classroom-term' || rankingType === 'grade-term') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Học kỳ</InputLabel>
                     <Select
                       value={rankingTermCode}
@@ -723,37 +705,25 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  className="student-dashboard-button"
-                >
+                <Button type="submit" variant="contained" className="dashboard-button">
                   Xem xếp hạng
                 </Button>
               </form>
-
-              {/* Hiển thị danh sách xếp hạng với DataGrid */}
               {rankings.length > 0 ? (
-                <Box className="student-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={rankings}
                     columns={rankingColumns}
-                    initialState={{
-                      pagination: {
-                        paginationModel: { pageSize: 5 },
-                      },
-                    }}
+                    initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
                     pageSizeOptions={[5, 10, 20]}
                     autoHeight
                     getRowClassName={(params) =>
-                      params.row.student_code === user?.student_code ? 'student-ranking-highlight' : ''
+                      params.row.student_code === user?.student_code ? 'highlight-row' : ''
                     }
                   />
                 </Box>
               ) : (
-                <Typography className="student-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có xếp hạng nào.
                 </Typography>
               )}
@@ -761,15 +731,14 @@ const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* Tab 3: Học lực */}
         {tabValue === 3 && (
-          <Card className="student-dashboard-card">
-            <CardContent className="student-dashboard-card-content">
-              <Typography variant="h6" gutterBottom>
-                Xem học lực
+          <Card className="dashboard-card">
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Xem Học Lực
               </Typography>
-              <form onSubmit={handleFetchAcademicPerformance}>
-                <FormControl className="student-dashboard-form-control">
+              <form onSubmit={handleFetchAcademicPerformance} className="dashboard-form">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Loại học lực</InputLabel>
                   <Select
                     value={academicPerformanceType}
@@ -783,9 +752,8 @@ const StudentDashboard = () => {
                     <MenuItem value="grade-yearly">Học lực theo khối cả năm</MenuItem>
                   </Select>
                 </FormControl>
-
                 {(academicPerformanceType === 'classroom-term' || academicPerformanceType === 'classroom-yearly') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Lớp học</InputLabel>
                     <Select
                       value={classroomCode}
@@ -801,9 +769,8 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
                 {(academicPerformanceType === 'grade-term' || academicPerformanceType === 'grade-yearly') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Khối</InputLabel>
                     <Select
                       value={gradeCode}
@@ -819,9 +786,8 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
                 {(academicPerformanceType === 'classroom-term' || academicPerformanceType === 'grade-term') && (
-                  <FormControl className="student-dashboard-form-control">
+                  <FormControl className="dashboard-form-control">
                     <InputLabel>Học kỳ</InputLabel>
                     <Select
                       value={rankingTermCode}
@@ -837,8 +803,7 @@ const StudentDashboard = () => {
                     </Select>
                   </FormControl>
                 )}
-
-                <FormControl className="student-dashboard-form-control">
+                <FormControl className="dashboard-form-control">
                   <InputLabel>Mức học lực</InputLabel>
                   <Select
                     value={academicPerformanceLevel}
@@ -853,37 +818,25 @@ const StudentDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  className="student-dashboard-button"
-                >
+                <Button type="submit" variant="contained" className="dashboard-button">
                   Xem học lực
                 </Button>
               </form>
-
-              {/* Hiển thị danh sách học sinh theo học lực với DataGrid */}
               {academicPerformanceData.length > 0 ? (
-                <Box className="student-dashboard-data-grid">
+                <Box className="dashboard-data-grid">
                   <DataGrid
                     rows={academicPerformanceData}
                     columns={academicPerformanceColumns}
-                    initialState={{
-                      pagination: {
-                        paginationModel: { pageSize: 5 },
-                      },
-                    }}
+                    initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
                     pageSizeOptions={[5, 10, 20]}
                     autoHeight
                     getRowClassName={(params) =>
-                      params.row.student_code === user?.student_code ? 'student-ranking-highlight' : ''
+                      params.row.student_code === user?.student_code ? 'highlight-row' : ''
                     }
                   />
                 </Box>
               ) : (
-                <Typography className="student-dashboard-no-data">
+                <Typography className="dashboard-no-data">
                   Không có học sinh nào phù hợp với mức học lực này.
                 </Typography>
               )}
