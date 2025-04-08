@@ -17,14 +17,9 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('Token in teacher.js interceptor:', token); 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Authorization header set in teacher.js:', config.headers.Authorization); 
-    } else {
-      console.log('No token found in localStorage for teacher.js');
     }
-    console.log('Sending request to:', config.baseURL + config.url); 
     return config;
   },
   (error) => {
@@ -36,7 +31,6 @@ api.interceptors.request.use(
 // API để gán giáo viên làm chủ nhiệm lớp
 export const assignHomeroomClassroom = async (classroomCode) => {
   try {
-    console.log('Assigning homeroom classroom:', classroomCode);
     const response = await api.post('/assign-homeroom-classroom', {
       classroom_code: classroomCode,
     });
@@ -50,7 +44,6 @@ export const assignHomeroomClassroom = async (classroomCode) => {
 // API để gán giáo viên dạy lớp
 export const assignTeachingClassroom = async (classroomCode) => {
   try {
-    console.log('Assigning teaching classroom:', classroomCode);
     const response = await api.post('/assign-teaching-classroom', {
       classroom_code: classroomCode,
     });
@@ -64,7 +57,6 @@ export const assignTeachingClassroom = async (classroomCode) => {
 // API để giáo viên nhập điểm
 export const enterScores = async (classroomCode, examCode, scores) => {
   try {
-    console.log('Entering scores for classroom:', classroomCode, 'exam:', examCode);
     const response = await api.post('/teacher/enter-scores', {
       classroom_code: classroomCode,
       exam_code: examCode,
@@ -80,7 +72,6 @@ export const enterScores = async (classroomCode, examCode, scores) => {
 // API để lấy danh sách tất cả giáo viên
 export const getAllTeachers = async () => {
   try {
-    console.log('Fetching all teachers from /teachers');
     const response = await api.get('/teachers');
     return response.data.data;
   } catch (error) {
@@ -92,7 +83,6 @@ export const getAllTeachers = async () => {
 // API để lấy danh sách học sinh theo lớp
 export const getStudentsByClassroom = async (classroomCode) => {
   try {
-    console.log('Fetching students for classroom:', classroomCode);
     const response = await api.get(`/students-by-classroom?classroom_code=${classroomCode}`);
     return response.data.data;
   } catch (error) {
@@ -104,7 +94,6 @@ export const getStudentsByClassroom = async (classroomCode) => {
 // API để lấy danh sách giáo viên trong một lớp
 export const getTeachersInClassroom = async (classroomCode) => {
   try {
-    console.log('Fetching teachers in classroom:', classroomCode);
     const response = await api.get(`/teachers-in-classroom?classroom_code=${classroomCode}`);
     return response.data.data;
   } catch (error) {
@@ -114,8 +103,6 @@ export const getTeachersInClassroom = async (classroomCode) => {
 };
 export const updateTeacherProfile = async (teacherData) => {
   try {
-    console.log('Updating teacher profile with data:', teacherData);
-
     // Tạo FormData để gửi dữ liệu dạng multipart/form-data
     const formData = new FormData();
     
@@ -136,10 +123,23 @@ export const updateTeacherProfile = async (teacherData) => {
       },
     });
 
-    console.log('Teacher profile updated successfully:', response.data);
     return response.data.data;
   } catch (error) {
     console.error('Error updating teacher profile:', error.response?.data || error.message);
+    throw error;
+  }
+};
+// API để lấy điểm của lớp học
+export const getClassroomScores = async (classroomCode, examCode = '', subjectCode = '') => {
+  try {
+    const response = await api.post('/teacher/classroom-scores', {
+      classroom_code: classroomCode,
+      exam_code: examCode,
+      subject_code: subjectCode,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching classroom scores:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -153,4 +153,5 @@ export default {
   getStudentsByClassroom,
   getTeachersInClassroom,
   updateTeacherProfile,
+  getClassroomScores,
 };
