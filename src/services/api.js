@@ -16,13 +16,11 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('Token in interceptor:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.log('No token found in localStorage');
     }
-    console.log('Sending request to:', config.baseURL + config.url); 
     return config;
   },
   (error) => {
@@ -33,13 +31,11 @@ api.interceptors.request.use(
 
 // API validate token
 export const validateToken = async (email) => {
-  console.log('Validating token for email:', email);
   return api.get(`/password/validate-token?email=${encodeURIComponent(email)}`);
 };
 
 // API reset password
 export const resetPassword = async (email, token, password, passwordConfirmation) => {
-  console.log('Resetting password for:', email);
   return api.post(
     `/password/reset?email=${encodeURIComponent(email)}`,
     { 
@@ -56,7 +52,6 @@ export const resetPassword = async (email, token, password, passwordConfirmation
 
 // API forgot password
 export const forgotPassword = async (email) => {
-  console.log('Sending forgot password request for:', email);
   return api.post('/password/forgot', { email });
 };
 
@@ -74,7 +69,6 @@ export const register = async (name, email, password, passwordConfirmation, role
 };
 // API login
 export const login = async (email, password) => {
-  console.log('Logging in user:', email);
   return api.post('/login', {
     email,
     password,

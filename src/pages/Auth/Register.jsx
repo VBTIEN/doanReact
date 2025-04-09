@@ -87,8 +87,6 @@ const Register = () => {
         } else if (role === 'Giáo Viên') {
           data.subject_codes = subjectCodes; 
         }
-        console.log("Data: ", data);
-
         // Gọi API đăng ký với dữ liệu đã chuẩn bị
         const response = await api.register(
           data.name,

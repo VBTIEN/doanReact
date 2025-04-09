@@ -57,14 +57,12 @@ const Login = () => {
     try {
       // Gọi API đăng nhập
       const response = await api.login(email, password);
-      console.log('API Response:', response.data);
       const token = response.data.data.token;
       localStorage.setItem('token', token);
 
       // Gọi API /user để lấy thông tin người dùng (token tự động được thêm bởi interceptor)
       const userResponse = await api.getUser();
       const userData = userResponse.data.data;
-      console.log('User data from /user:', userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
       navigate('/dashboard');

@@ -6,6 +6,7 @@ import '../../styles/SelectRole.css';
 const SelectRole = () => {
   const [role, setRole] = useState('');
   const [userData, setUserData] = useState(null);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +17,7 @@ const SelectRole = () => {
     } else {
       navigate('/login');
     }
+    
   }, [navigate]);
 
   const handleRoleSelection = async () => {
@@ -24,10 +26,12 @@ const SelectRole = () => {
       return;
     }
 
+
     try {
-      const response = await api.selectRole(role, userData);
+      const response = await api.selectRole(role, userData, selectedSubjects);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('subjects', JSON.stringify(selectedSubjects));
       localStorage.removeItem('user_data');
       navigate('/dashboard');
     } catch (error) {
@@ -36,13 +40,7 @@ const SelectRole = () => {
     }
   };
 
-  if (!userData) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="select-role-container">
@@ -51,7 +49,6 @@ const SelectRole = () => {
         <div className="left-panel">
           <img src="/images/hutech_logo.jpg" alt="Hutech Logo" className="logo" />
           <h2 className="title">Chọn vai trò</h2>
-          <p className="welcome-text">Xin chào, {userData.name} ({userData.email})</p>
           <form className="form">
             <div className="input-group">
               <label htmlFor="role" className="label">Vai trò</label>
@@ -68,6 +65,8 @@ const SelectRole = () => {
                 </select>
               </div>
             </div>
+            
+            
             <button
               type="button"
               onClick={handleRoleSelection}
